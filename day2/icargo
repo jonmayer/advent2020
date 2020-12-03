@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CMD="cargo $(printf " %q" "$@")"
+
+cargo "$@"
+echo "Waiting for further changes"
+
+iwatch \
+	-c "${CMD}" \
+	-e close_write -t "toml$|rs$" -r .
