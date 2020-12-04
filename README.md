@@ -5,4 +5,3 @@ My solutions to the series of puzzles at [Advent of Code
 
 Mostly, this is an exercise to teach myself Rust.  (If I was trying to play for
 speed, I'd probably stick to python3).
-
