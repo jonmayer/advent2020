@@ -5,13 +5,10 @@ use regex::Regex;
 fn main() {
     let inputfile = "input.txt";
 
-    let contents = fs::read_to_string(inputfile)
-                 .expect("Something went wrong reading the file");
+    let contents = fs::read_to_string(inputfile).expect("Something went wrong reading the file");
     let lines = contents.lines();
 
-    let re_line: Regex = Regex::new(
-          r"^\s*(\d+)-(\d+)\s+(\w):\s+(\w+)\s*$"
-          ).unwrap();
+    let re_line: Regex = Regex::new(r"^\s*(\d+)-(\d+)\s+(\w):\s+(\w+)\s*$").unwrap();
 
     // part 1 rules:
     let mut p1_valid = 0;
@@ -30,9 +27,7 @@ fn main() {
         let max = ro.get(2).unwrap().as_str().parse::<usize>().unwrap();
         let chr: Vec<char> = ro.get(3).unwrap().as_str().chars().collect();
         let password: &str = ro.get(4).unwrap().as_str();
-        let chr_count = password.chars()
-            .filter(|c| *c == chr[0])
-            .count();
+        let chr_count = password.chars().filter(|c| *c == chr[0]).count();
         if (chr_count >= min) && (chr_count <= max) {
             p1_valid += 1;
         }
@@ -50,5 +45,3 @@ fn main() {
     println!("p1_valid: {}", p1_valid);
     println!("p2_valid: {}", p2_valid);
 }
-
-

@@ -1,4 +1,5 @@
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate regex;
 
 use regex::Regex;
@@ -28,14 +29,9 @@ fn ppvalid(p: &Passport) -> bool {
     pid (Passport ID)
     cid (Country ID) -- optional
     */
-    return
-       p.contains_key("byr") &&
-       p.contains_key("iyr") &&
-       p.contains_key("eyr") &&
-       p.contains_key("hgt") &&
-       p.contains_key("hcl") &&
-       p.contains_key("ecl") &&
-       p.contains_key("pid");
+    return p.contains_key("byr") && p.contains_key("iyr") && p.contains_key("eyr") &&
+        p.contains_key("hgt") && p.contains_key("hcl") && p.contains_key("ecl") &&
+        p.contains_key("pid");
 }
 
 // passport validator for part 2
@@ -43,10 +39,16 @@ fn yearinrange(yr: &str, min: u32, max: u32) -> bool {
     lazy_static! {
         static ref re_year: Regex = Regex::new(r"^\d{4}$").unwrap();
     }
-    if !re_year.is_match(yr) { return false };
+    if !re_year.is_match(yr) {
+        return false;
+    };
     let value = yr.parse::<u32>().unwrap();
-    if (value < min) { return false; }
-    if (value > max) { return false; }
+    if (value < min) {
+        return false;
+    }
+    if (value > max) {
+        return false;
+    }
     return true;
 }
 
@@ -63,18 +65,23 @@ fn ppvalid2(p: &Passport) -> bool {
      * pid (Passport ID) - a nine-digit number, including leading zeroes.
      * cid (Country ID) - ignored, missing or not.
      */
-   if !(p.contains_key("byr") &&
-        p.contains_key("iyr") &&
-        p.contains_key("eyr") &&
-        p.contains_key("hgt") &&
-        p.contains_key("hcl") &&
-        p.contains_key("ecl") &&
-        p.contains_key("pid")) { return false; }
-   if !yearinrange(p["byr"], 1920, 2002) { return false; }
-   if !yearinrange(p["iyr"], 2010, 2020) { return false; }
-   if !yearinrange(p["eyr"], 2020, 2030) { return false; }
+    if !(p.contains_key("byr") && p.contains_key("iyr") && p.contains_key("eyr") &&
+             p.contains_key("hgt") && p.contains_key("hcl") && p.contains_key("ecl") &&
+             p.contains_key("pid"))
+    {
+        return false;
+    }
+    if !yearinrange(p["byr"], 1920, 2002) {
+        return false;
+    }
+    if !yearinrange(p["iyr"], 2010, 2020) {
+        return false;
+    }
+    if !yearinrange(p["eyr"], 2020, 2030) {
+        return false;
+    }
 
-   lazy_static! {
+    lazy_static! {
        static ref re_hgt: Regex = Regex::new(r"^(\d+)(in|cm)$").unwrap();
        static ref re_hcl: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
        static ref re_ecl: Regex = Regex::new(
@@ -82,33 +89,42 @@ fn ppvalid2(p: &Passport) -> bool {
        static ref re_pid: Regex = Regex::new(
            r"^\d{9}$").unwrap();
    }
-   if !re_hcl.is_match(p["hcl"]) { return false; }
-   if !re_ecl.is_match(p["ecl"]) { return false; }
-   if !re_pid.is_match(p["pid"]) { return false; }
+    if !re_hcl.is_match(p["hcl"]) {
+        return false;
+    }
+    if !re_ecl.is_match(p["ecl"]) {
+        return false;
+    }
+    if !re_pid.is_match(p["pid"]) {
+        return false;
+    }
 
-   let parts = re_hgt.captures(p["hgt"]);
-   if parts.is_none() { return false; }
-   let parts = parts.unwrap();
-   let value = parts.get(1).unwrap().as_str().parse::<u32>().unwrap();
-   if parts.get(2).unwrap().as_str() == "in" {
-       if (value < 59) || (value > 76) { return false; }
-   } else {
-       if (value < 150) || (value > 193) { return false; }
-   }
+    let parts = re_hgt.captures(p["hgt"]);
+    if parts.is_none() {
+        return false;
+    }
+    let parts = parts.unwrap();
+    let value = parts.get(1).unwrap().as_str().parse::<u32>().unwrap();
+    if parts.get(2).unwrap().as_str() == "in" {
+        if (value < 59) || (value > 76) {
+            return false;
+        }
+    } else {
+        if (value < 150) || (value > 193) {
+            return false;
+        }
+    }
 
-   return true; 
+    return true;
 }
 
 fn main() {
     // let inputfile = "example.txt";
     let inputfile = "input.txt";
 
-    let contents = fs::read_to_string(inputfile)
-                 .expect("Something went wrong reading the file");
-    let records: Vec<&str> = contents.split("\n\n")
-        .map(|x| x.trim()).collect();
-    let passports: Vec<Passport> = records.iter()
-        .map(|x| parse(x)).collect();
+    let contents = fs::read_to_string(inputfile).expect("Something went wrong reading the file");
+    let records: Vec<&str> = contents.split("\n\n").map(|x| x.trim()).collect();
+    let passports: Vec<Passport> = records.iter().map(|x| parse(x)).collect();
     let valids: Vec<bool> = passports.iter().map(|x| ppvalid(&x)).collect();
     dbg!(records.len());
     // dbg!(&valids);
