@@ -3,9 +3,13 @@
 My solutions to the series of puzzles at [Advent of Code
 2020](http://adventofcode.com/2020).
 
+## Why
+
 Mostly, this is an exercise to teach myself Rust.  (If I was trying to play for
 speed, I'd probably stick to python3).  Please don't judge my Rust style too
 harshly, I am just getting started.
+
+## Lessons
 
 A miniblog of neat things I've learned:
 
@@ -40,3 +44,11 @@ A miniblog of neat things I've learned:
   Rust needs a LTS subset of core crates for users to depend on.
 
 * Rust is really persnickety about places where I add extra parens for clarity.
+
+## See Also
+
+Some friends of mine have their own
+solutions on github, too:
+
+* [WalrusWalrus](http://github.com/WalrusWalrus/adv2020)
+
