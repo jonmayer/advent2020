@@ -45,10 +45,20 @@ A miniblog of neat things I've learned:
 
 * Rust is really persnickety about places where I add extra parens for clarity.
 
+* In the example `foo.iter().filter(|x| x.foo())`, the type of `x` is actually
+  a reference to the type of `foo`'s iterable data.  Thanks to
+  auto-dereferencing, we usually don't care.
+
+* Rust auto-dereferences on method invocation, which is to say that it performs
+  a complicated search of the various ways to dereference until it finds a match.
+  This is neat, but it means that `x.some_method()` will do roughly what I want
+  even if x is a reference, but `x > 0` won't de-reference as Rust references
+  have comparison operators.  Further reading:
+  https://stackoverflow.com/questions/28519997/what-are-rusts-exact-auto-dereferencing-rules
+
 ## See Also
 
-Some friends of mine have their own
-solutions on github, too:
+Some friends of mine have their own solutions on github, too:
 
 * [WalrusWalrus](http://github.com/WalrusWalrus/adv2020)
 
