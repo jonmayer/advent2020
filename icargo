@@ -5,6 +5,10 @@ CMD="cargo $(printf " %q" "$@")"
 cargo "$@"
 echo "Waiting for further changes"
 
-iwatch \
-	-c "${CMD}" \
-	-e close_write -t "toml$|rs$" -r .
+if cargo -- list | grep "^    watch" > /dev/null; then
+	cargo watch -x "$*"
+else
+	iwatch \
+		-c "${CMD}" \
+		-e close_write -t "toml$|rs$" -r .
+fi
