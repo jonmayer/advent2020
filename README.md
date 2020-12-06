@@ -56,6 +56,9 @@ A miniblog of neat things I've learned:
   have comparison operators.  Further reading:
   https://stackoverflow.com/questions/28519997/what-are-rusts-exact-auto-dereferencing-rules
 
+* Geez, they let just anybody submit crates to crate.io.  That's a pretty polluted
+  namespace.  How does anyone separate the good libraries from the abandonware?
+
 ## See Also
 
 Some friends of mine have their own solutions on github, too:

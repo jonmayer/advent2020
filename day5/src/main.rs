@@ -44,6 +44,7 @@ fn main() {
     for id in (min_seatid+8)..(max_seatid+1-8) {
         if !idset[id] {
             println!("my seat: {}", id);
+            assert_eq!(649, id, "want: 649, got: {}", id);
         }
     }
 }
