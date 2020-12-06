@@ -11,7 +11,9 @@ harshly, I am just getting started.
 
 ## Lessons
 
-A miniblog of neat things I've learned:
+A miniblog of Rust quirks and lessons that I've learned.
+
+# 2020-12-04
 
 * I wrote my own `icargo` wrapper to combine iwatch and cargo, but it would
   be great if this was a built-in.  (Maybe I'll look at the cargo source and
@@ -45,6 +47,8 @@ A miniblog of neat things I've learned:
 
 * Rust is really persnickety about places where I add extra parens for clarity.
 
+# 2020-12-05
+
 * In the example `foo.iter().filter(|x| x.foo())`, the type of `x` is actually
   a reference to the type of `foo`'s iterable data.  Thanks to
   auto-dereferencing, we usually don't care.
@@ -56,8 +60,24 @@ A miniblog of neat things I've learned:
   have comparison operators.  Further reading:
   https://stackoverflow.com/questions/28519997/what-are-rusts-exact-auto-dereferencing-rules
 
+### 2020-12-06
+
+* Unsigned subtraction panics on underflow.  Preusably, all operators panic on
+  overflow or underflow.  An explicit `u32.wrapped_sub` is necessary to get the
+  usual 2's complement behavior.  I wonder if there's a way to disable this
+  behavior in favor of computational efficiency?
+
 * Geez, they let just anybody submit crates to crate.io.  That's a pretty polluted
   namespace.  How does anyone separate the good libraries from the abandonware?
+
+* Rust does not allow static members of structs.  I wonder how Rust implements
+  singletons?
+
+* `const` and `static` are not the same in Rust.
+
+* Structs can not contain `const` nor `static` data.  Rust's pattern is to
+  move class-static data to a method, but this precludes the ability to
+  use a size constant when declaring fixed-size arrays within the struct.
 
 ## See Also
 

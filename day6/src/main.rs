@@ -1,20 +1,22 @@
 use advent;
 
+const SURVEY_SIZE: usize = 26;
+
 struct SurveySet {
-    answer_count: [u32; 26],
+    answer_count: [u32; SURVEY_SIZE],  // number of yes answers for 26 questions.
     entries: u32
 }
 
 impl SurveySet {
     fn new() -> SurveySet {
-        SurveySet { answer_count: [0; 26], entries: 0 }
+        SurveySet { answer_count: [0; SURVEY_SIZE], entries: 0 }
     }
 
     fn read_record(&mut self, record: &str) {
         for c in record.chars() {
             if c == '\n' { self.entries += 1; }
             let index = (c as usize).wrapping_sub('a' as usize);
-            if index <= 26 {self.answer_count[index] += 1;}
+            if index <= SURVEY_SIZE {self.answer_count[index] += 1;}
         }
         self.entries += 1;
     }
