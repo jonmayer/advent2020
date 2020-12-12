@@ -79,6 +79,39 @@ A miniblog of Rust quirks and lessons that I've learned.
   move class-static data to a method, but this precludes the ability to
   use a size constant when declaring fixed-size arrays within the struct.
 
+### 2020-12-07
+
+*Day 7*: I went on a little detour involving Rust lifetimes.  My big idea was to build
+an object that contained a large text string, and then mark up that string
+with a `HashMap<&str, &str>` where both the key and the values would be
+references into the large non-mutable String.  This did not work, by I had to
+unpeel two layers of the onion to understand why:
+
+1. The first thing I learned what that I had created an situation where Rust
+   could not correctly infer lifetimes.  I decided that all references into
+   the text String should have the lifetime of the String itself, and managed
+   that by explicitly specifying lifetimes.  This turned into explicitly
+   specifying lifetimes for every function, and every reference, which was a
+   fair amount of typing but I ultimately got that part to compile.
+
+2. The second thing I learned is that Rust simply disallows what I'm trying
+   to do in the first place.  That is: A Rust struct cannot have a value
+   and a reference to that value in the same struct.  For an explanation,
+   https://stackoverflow.com/questions/32300132/why-cant-i-store-a-value-and-a-reference-to-that-value-in-the-same-struct
+
+At this point, I had two options: I could start labeling my references as
+unsafe, and just be careful not to clone or move my object, or rewrite the data
+structure to create owned copies of all string snippets instead of references.
+I did the latter, which produced a quick and easy implementation that also
+thrashes the heap quite severely.  This would have been straightforward and
+memory efficient in C++, but Rust's memory paranoia made me choose between
+safety and inefficiency.
+
+I keep feeling that there has to be a way to make my initial approach work.  I
+could replace my string references with start and stop indexes?  Or, perhaps
+there is simply a better way to construct my object system.  When I have time,
+I'll get back to this and see if I can still fix it.
+
 ## See Also
 
 Some friends of mine have their own solutions on github, too:
