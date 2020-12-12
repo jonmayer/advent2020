@@ -9,42 +9,44 @@ struct Adapters {
 // Takes a length of delta-1 sequence and returns the number of legal
 // mutations of that sequence (including the original).
 fn length_to_mutations(l: usize) -> u128 {
-        // All 1-delta subsequences are isomorphic with the following examples.
-        // The first joltage and the final joltage are fixed, but some of the
-        // steps in between can be removed as long as no joltage jump is greater
-        // than 3.
-        //
-        // length 1: 0 1  --> 1 mutation
-        // length 2: 0 1 2
-        //           0   2  --> 2 mutations (the 1 can be dropped)
-        // length 3: 0 1 2 3
-        //           0   2 3
-        //           0 1   3
-        //           0     3 --> 4 mutations
-        // length 4: 0 1 2 3 4
-        //           0   2 3 4
-        //           0 1   3 4
-        //           0 1 2   4
-        //           0   2   4
-        //           0     3 4
-        //           0 1     4 -> 7 mutations
-        return match l {
-                1 => 1u128,
-                2 => 2u128,
-                3 => 4u128,
-                4 => 7u128,
-                _ => 0u128 };
+    // All 1-delta subsequences are isomorphic with the following examples.
+    // The first joltage and the final joltage are fixed, but some of the
+    // steps in between can be removed as long as no joltage jump is greater
+    // than 3.
+    //
+    // length 1: 0 1  --> 1 mutation
+    // length 2: 0 1 2
+    //           0   2  --> 2 mutations (the 1 can be dropped)
+    // length 3: 0 1 2 3
+    //           0   2 3
+    //           0 1   3
+    //           0     3 --> 4 mutations
+    // length 4: 0 1 2 3 4
+    //           0   2 3 4
+    //           0 1   3 4
+    //           0 1 2   4
+    //           0   2   4
+    //           0     3 4
+    //           0 1     4 -> 7 mutations
+    return match l {
+        1 => 1u128,
+        2 => 2u128,
+        3 => 4u128,
+        4 => 7u128,
+        _ => 0u128,
+    };
 }
 
 impl Adapters {
     fn new() -> Adapters {
-        Adapters { joltage: Vec::new(), sequence: Vec::new() }
+        Adapters {
+            joltage: Vec::new(),
+            sequence: Vec::new(),
+        }
     }
 
     fn parse(&mut self, text: &str) {
-        self.joltage = text.lines()
-            .map(|x| x.parse::<i64>().unwrap())
-            .collect();
+        self.joltage = text.lines().map(|x| x.parse::<i64>().unwrap()).collect();
         self.sequence = self.joltage.clone();
         // add the starting joltage:
         self.sequence.push(0);
@@ -58,7 +60,7 @@ impl Adapters {
     fn count_deltas(&self) -> Vec<u64> {
         let mut counters: Vec<u64> = vec![0u64, 0, 0, 0];
         for i in 1..self.sequence.len() {
-            let delta = (self.sequence[i] - self.sequence[i-1]) as usize;
+            let delta = (self.sequence[i] - self.sequence[i - 1]) as usize;
             counters[delta] += 1;
         }
         return counters;
@@ -68,9 +70,10 @@ impl Adapters {
         let mut lengths: Vec<usize> = Vec::new();
         let mut count = 0usize;
         for i in 1..self.sequence.len() {
-            let delta = (self.sequence[i] - self.sequence[i-1]) as usize;
-            if delta == 1 { count += 1 }
-            else if count != 0 {
+            let delta = (self.sequence[i] - self.sequence[i - 1]) as usize;
+            if delta == 1 {
+                count += 1
+            } else if count != 0 {
                 let j = i - count;
                 println!("{}:{} = {:?}", j, i, &self.sequence[j..i]);
                 lengths.push(count);
@@ -100,7 +103,7 @@ fn main() {
 
     dbg!(adapters.count_subsequences());
     let part2 = adapters.count_legal_combos();
-    assert_eq!(3454189699072, part2);  // now that I know the answer...
+    assert_eq!(3454189699072, part2); // now that I know the answer...
 
     dbg!(part1);
     dbg!(part2);
