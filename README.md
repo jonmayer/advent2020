@@ -116,5 +116,5 @@ I'll get back to this and see if I can still fix it.
 
 Some friends of mine have their own solutions on github, too:
 
-* [WalrusWalrus](http://github.com/WalrusWalrus/adv2020)
+* [WalrusCodes](http://github.com/WalrusCodes/adv2020)
 
