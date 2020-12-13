@@ -112,6 +112,17 @@ could replace my string references with start and stop indexes?  Or, perhaps
 there is simply a better way to construct my object system.  When I have time,
 I'll get back to this and see if I can still fix it.
 
+### 2020-12-12
+
+I'm all caught up!  And then I went back and rewrote *Day 12* to see how
+difficult it would be to dispatch commands via function pointers and table
+lookup instead of a match statement.
+
+I learned that the type for a method pointer is similar to `fn(&mut Class, i32,
+i32) -> i32`.  I used the `lazy_static` macro to initialize my HashMap of
+commands onto method pointers, and that felt a bit ugly but it works properly.
+Maybe Rust will add a better way to initialize maps in the future?
+
 ## See Also
 
 Some friends of mine have their own solutions on github, too:
