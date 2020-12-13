@@ -1,11 +1,17 @@
+#[macro_use]
+extern crate lazy_static;
+
 use advent;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 struct Ship {
-    facing: i32,  // 0 is east, 90 is north, 180 is west, 270 is south
-    x: i32,  // west is negative, east is positive
-    y: i32,  // south is negative, north is positive
+    facing: i32, // 0 is east, 90 is north, 180 is west, 270 is south
+    x: i32, // west is negative, east is positive
+    y: i32, // south is negative, north is positive
 }
+
+type ShipMethodPtr = fn(&mut Ship, i32);
 
 impl Ship {
     fn new() -> Ship {
@@ -16,28 +22,64 @@ impl Ship {
         }
     }
 
+    // There are less verbose ways to do this, but I just want to learn how to use rust method
+    // pointers:
+
+    fn do_command_n(&mut self, value: i32) {
+        self.y += value;
+    }
+
+    fn do_command_s(&mut self, value: i32) {
+        self.y -= value;
+    }
+
+    fn do_command_e(&mut self, value: i32) {
+        self.x += value;
+    }
+
+    fn do_command_w(&mut self, value: i32) {
+        self.x -= value;
+    }
+
+    fn do_command_l(&mut self, value: i32) {
+        self.facing = (self.facing + value + 360) % 360;
+    }
+
+    fn do_command_r(&mut self, value: i32) {
+        self.facing = (self.facing - value + 360) % 360;
+    }
+
+    fn do_command_f(&mut self, value: i32) {
+        match self.facing {
+            0 => self.do_command_e(value),
+            90 => self.do_command_n(value),
+            180 => self.do_command_w(value),
+            270 => self.do_command_s(value),
+            _ => panic!("invalid facing {}", self.facing),
+        };
+    }
+
     fn do_command(&mut self, text: &str) {
+        lazy_static! {
+            static ref CMD_MAP: HashMap<&'static str, ShipMethodPtr> = {
+                let mut map: HashMap<&'static str, ShipMethodPtr> = HashMap::new();
+                map.insert("N", Ship::do_command_n);
+                map.insert("S", Ship::do_command_s);
+                map.insert("E", Ship::do_command_e);
+                map.insert("W", Ship::do_command_w);
+                map.insert("L", Ship::do_command_l);
+                map.insert("R", Ship::do_command_r);
+                map.insert("F", Ship::do_command_f);
+                map
+            };
+        }
+
         println!("{}", text);
         let cmd = &text[0..1];
         let value = text[1..].parse::<i32>().unwrap();
-        match cmd {
-            "N" => self.y += value,
-            "S" => self.y -= value,
-            "E" => self.x += value,
-            "W" => self.x -= value,
-            "L" => self.facing = (self.facing + value) % 360,
-            "R" => self.facing = (self.facing - value) % 360,
-            "F" => match self.facing {
-                0 => self.x += value,
-                90 => self.y += value,
-                180 => self.x -= value,
-                270 => self.y -= value,
-                _ => panic!("facing {}", self.facing),
-            },
-            _ => panic!("invalid cmd {}", cmd),
-        };
-        if self.facing < 0 { self.facing += 360 };
-     }
+        let method = CMD_MAP[cmd];
+        method(self, value);
+    }
 
     fn do_all_commands(&mut self, text: &str) {
         for line in text.lines() {
@@ -54,10 +96,10 @@ impl Ship {
 
 #[derive(Clone, Debug)]
 struct Ship2 {
-    x: i32,  // west is negative, east is positive
-    y: i32,  // south is negative, north is positive
-    wx: i32,  // waypoint x
-    wy: i32,  // waypoint y
+    x: i32, // west is negative, east is positive
+    y: i32, // south is negative, north is positive
+    wx: i32, // waypoint x
+    wy: i32, // waypoint y
 }
 impl Ship2 {
     fn new() -> Ship2 {
@@ -106,7 +148,7 @@ impl Ship2 {
             "F" => self.move_towards_waypoint(value),
             _ => panic!("invalid cmd {}", cmd),
         };
-     }
+    }
 
     fn do_all_commands(&mut self, text: &str) {
         for line in text.lines() {
@@ -130,27 +172,27 @@ impl Ship2 {
 }
 
 fn test() {
-  // Quick regression test.
-  println!("test...");
-  let mut ship = Ship2::new();
-  ship.assert_waypoint(10, 1);
-  ship.assert_position(0, 0);
+    // Quick regression test.
+    println!("test...");
+    let mut ship = Ship2::new();
+    ship.assert_waypoint(10, 1);
+    ship.assert_position(0, 0);
 
-  ship.do_command("F10");
-  ship.assert_waypoint(10, 1);
-  ship.assert_position(100, 10);
+    ship.do_command("F10");
+    ship.assert_waypoint(10, 1);
+    ship.assert_position(100, 10);
 
-  ship.do_command("N3");
-  ship.assert_waypoint(10, 4);
-  ship.assert_position(100, 10);
+    ship.do_command("N3");
+    ship.assert_waypoint(10, 4);
+    ship.assert_position(100, 10);
 
-  ship.do_command("F7");
-  ship.assert_waypoint(10, 4);
-  ship.assert_position(170, 38);
+    ship.do_command("F7");
+    ship.assert_waypoint(10, 4);
+    ship.assert_position(170, 38);
 
-  ship.do_command("R90");
-  ship.assert_waypoint(4, -10);
-  ship.assert_position(170, 38);
+    ship.do_command("R90");
+    ship.assert_waypoint(4, -10);
+    ship.assert_position(170, 38);
 }
 
 fn main() {
@@ -161,7 +203,7 @@ fn main() {
     {
         let mut ship = Ship::new();
         ship.do_all_commands(&content);
-        part1 =  ship.manhattan_distance();
+        part1 = ship.manhattan_distance();
     }
 
     let part2: i32;
