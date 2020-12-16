@@ -9,4 +9,3 @@ edition = "2018"
 [dependencies]
 advent = { path = "../advent" }
 regex = "1"
-howlong = "0.1"

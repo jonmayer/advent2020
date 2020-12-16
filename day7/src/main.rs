@@ -2,7 +2,6 @@ use advent;
 use std::collections;
 use std::collections::HashMap;
 use regex;
-use howlong::timer;
 
 #[derive(Clone, Debug)]
 struct BagRule {
