@@ -123,6 +123,15 @@ i32) -> i32`.  I used the `lazy_static` macro to initialize my HashMap of
 commands onto method pointers, and that felt a bit ugly but it works properly.
 Maybe Rust will add a better way to initialize maps in the future?
 
+### 2020-12-13
+
+*Day 13* taught me: if I want a performant brute-force solution, I should
+remember to turn compiler optimizations on.  `cargo --release run`.  I ended up
+replacing my brute force solution with a more mathy solution that completes in
+a blink, but it's possible my BF solution would have been good enough if I had
+remembered that Rust compiles in debug mode by default.
+
+
 ## See Also
 
 Some friends of mine have their own solutions on github, too:

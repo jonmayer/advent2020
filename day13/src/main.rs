@@ -3,6 +3,7 @@
 // Be Han helped with this solution!
 
 use advent;
+use howlong;
 
 // PART 1
 
@@ -94,45 +95,29 @@ struct Bus {
 }
 
 impl Bus {
-    // Compute the kth arrival.
-    fn arrival_time(&self, k: i128) -> i128 {
-        return k * self.interval + self.start_time;
-    }
-
     // Make a super bus by combining this bus with another bus.
     fn combine_with_other_bus(&mut self, other: &Bus) {
-        // This is the brute force search:
-        let mut k0: i128 = 1;
-        let mut k1: i128 = 1;
-        loop {
-            let a0 = self.arrival_time(k0);
-            let a1 = other.arrival_time(k1);
-            if a0 == a1 { break; };
-            if a0 < a1 {
-                // a0 < a1
-                k0 += 1;
-            } else {
-                // a0 > a1
-                // sometimes a0 >>> a1, so let's do a little math to jump by a bigger increment
-                // when possible.
-                let mut incr = (a0 - a1) / other.interval;
-                if incr < 1 { incr = 1; }
-                k1 += incr;
-            };
+        // We want to solve for n where:
+        // (self.start_time + n * self.interval) % other.interval = (other.start_time % other.interval)
+        let mut a0 = self.start_time;
+        let seek = other.start_time.rem_euclid(other.interval);
+        while (a0 % other.interval) != seek {
+            a0 += self.interval;
         }
 
         // update bus:
-        self.start_time = self.arrival_time(k0);
+        self.start_time = a0;
         self.interval = self.interval * other.interval;
     }
 }  // impl Bus
 
 fn part2(text: &str) -> i128 {
     // Parse bus ids:
-    let v: Vec<_> = text.split(",")
+    let mut v: Vec<_> = text.split(",")
         .enumerate()
         .filter(|(_, id)| *id != "x")
         .collect();
+    v.sort_by(|(_, a), (_, b)| b.cmp(a));
     dbg!(&v);
 
     // Construct bus ids to Bus objects, using index as the staggered start_time.
@@ -142,13 +127,14 @@ fn part2(text: &str) -> i128 {
                    start_time: (*i as i128) * -1, })
         .collect();
     dbg!(&buses);
+    let timer = howlong::HighResolutionTimer::new();
 
     // Combine all the buses into a super bus.
     let mut bus: Bus = buses[0].clone();
     for i in 1..buses.len() {
         bus.combine_with_other_bus(&buses[i]);
-        dbg!(&bus);
     }
+    dbg!(timer.elapsed());
     return bus.start_time;  // Timestamp of first convergence.
 }
 
