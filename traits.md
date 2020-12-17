@@ -6,14 +6,14 @@ TODO: mark which traits are derive-able and which aren't.
 
 | Trait | Description |
 | --- | --- |
-| [Display] | |
-| [Debug | |
-| [Default] | |
+| [Display] | Enables println! |
+| [Debug] | Enables dbg! |
+| [Default] | Defines a default value for a type. |
 | [From] | Enables value-to-value conversion. |
 | [FromStr] | Enables `s.parse::<Foo>`. ||
 | [Clone] | Implements a method for object duplication. |
-| [Copy] | Indicates a type can be copied via memcpy. |
-| [Borrow] | |
+| [Copy] | Marks type as memcpy-able. |
+| [Borrow] | Defines a reference type (`&str`) for a storage type (`String`). |
 | [Read] | Read from I/O stream. |
 | [Write] | Write to I/O stream. |
 | [Error] | |
@@ -21,11 +21,11 @@ TODO: mark which traits are derive-able and which aren't.
 [Debug]: https://doc.rust-lang.org/std/fmt/trait.Debug.html
 [Default]: https://doc.rust-lang.org/std/default/index.html
 [Display]: https://doc.rust-lang.org/std/fmt/trait.Display.html
-[Copy]:
-[Clone]:
+[Copy]: https://doc.rust-lang.org/std/marker/trait.Copy.html
+[Clone]: https://doc.rust-lang.org/std/clone/trait.Clone.html
 [From]: https://doc.rust-lang.org/std/convert/trait.From.html
 [FromStr]: https://doc.rust-lang.org/std/str/trait.FromStr.html
-[Borrow]:
+[Borrow]: https://doc.rust-lang.org/std/borrow/trait.Borrow.html
 [Write]: https://doc.rust-lang.org/std/io/trait.Write.html
 [Read]: https://doc.rust-lang.org/std/io/trait.Read.html
 [Error]: https://doc.rust-lang.org/std/error/trait.Error.html
