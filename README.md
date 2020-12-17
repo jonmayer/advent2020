@@ -131,6 +131,13 @@ replacing my brute force solution with a more mathy solution that completes in
 a blink, but it's possible my BF solution would have been good enough if I had
 remembered that Rust compiles in debug mode by default.
 
+### 2020-12-14
+
+*Day 14* I wrote my first Iterator type.
+
+### 2020-12-17
+
+I've started to build a catalog of commonly used [traits](traits.md).
 
 ## See Also
 
