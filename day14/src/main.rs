@@ -140,11 +140,7 @@ struct System {
 type Program = Vec<Instruction>;
 
 fn parse_program(content: &str) -> Program {
-    let mut program = Program::new();
-    for line in content.lines() {
-        program.push(Instruction::new(line.trim()));
-    }
-    return program;
+    content.lines().map(|line| Instruction::new(line.trim())).collect()
 }
 
 impl System {
