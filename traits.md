@@ -22,14 +22,14 @@ TODO: mark which traits are derive-able and which aren't.
 | [Ord][ord] | |  |
 | [PartialOrd][partialord] | |  |
 
-Notes:
+### Notes
 
-<a anchor="eq"></a>
+#### Note 1
 
-- `Eq` and `PartialEq` provide slightly different promises.  `PartialEq`
-  guarantees symmetric (`a == b` implies `b == a`) and transitive (if `a == b`
-  and `b == c` then `a == c`) properties, but not the reflexive (`a == a`)
-  property.  `Eq` adds the reflexive property guarantee.
+`Eq` and `PartialEq` provide slightly different promises.  `PartialEq`
+guarantees symmetric (`a == b` implies `b == a`) and transitive (if `a == b`
+and `b == c` then `a == c`) properties, but not the reflexive (`a == a`)
+property.  `Eq` adds the reflexive property guarantee.
 
 ## Iterator Traits
 
