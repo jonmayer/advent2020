@@ -4,19 +4,23 @@ TODO: mark which traits are derive-able and which aren't.
 
 ## Core Traits
 
-| Trait | Description |
+| Trait | Description | Derivable |
 | --- | --- |
-| [Display] | Enables println! |
-| [Debug] | Enables dbg! |
-| [Default] | Defines a default value for a type. |
-| [From] | Enables value-to-value conversion. |
-| [FromStr] | Enables `s.parse::<Foo>`. ||
-| [Clone] | Implements a method for object duplication. |
-| [Copy] | Marks type as memcpy-able. |
-| [Borrow] | Defines a reference type (`&str`) for a storage type (`String`). |
-| [Read] | Read from I/O stream. |
-| [Write] | Write to I/O stream. |
-| [Error] | |
+| [Display] | Enables println! | No |
+| [Debug] | Enables dbg! | If all fields implement Debug |
+| [Default] | Gives type a default value. | If all fields implement Default |
+| [From] | Enables value-to-value conversion. | No |
+| [FromStr] | Enables `s.parse::<Foo>`. | No. |
+| [Clone] | Implements a method for object duplication. | If all fields implement Clone. |
+| [Copy] | Marks type as memcpy-able. | If all fields are marked Copy. |
+| [Borrow] | Defines a reference type (`&str`) for a storage type (`String`). | No. |
+| [Read] | Read from I/O stream. | No. |
+| [Write] | Write to I/O stream. | No. |
+| [Error] | Can be used as an error. | Yes if impl Display and Debug. |
+| [Eq] | Equality ([note 1](#eq)) | If all fields implement Eq. |
+| [PartialEq] | Partial Equality ([note 1](#eq)) | If all fields implement Eq or PartialEq. |
+| [Ord] | |  |
+| [PartialOrd] | |  |
 
 [Debug]: https://doc.rust-lang.org/std/fmt/trait.Debug.html
 [Default]: https://doc.rust-lang.org/std/default/index.html
@@ -29,6 +33,19 @@ TODO: mark which traits are derive-able and which aren't.
 [Write]: https://doc.rust-lang.org/std/io/trait.Write.html
 [Read]: https://doc.rust-lang.org/std/io/trait.Read.html
 [Error]: https://doc.rust-lang.org/std/error/trait.Error.html
+[Eq]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
+[PartialEq]: https://doc.rust-lang.org/std/cmp/trait.PartialEq.html
+[Ord]: https://doc.rust-lang.org/std/cmp/trait.Ord.html
+[PartialOrd]: https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html
+
+Notes:
+
+<a anchor="eq"></a>
+
+* `Eq` and `PartialEq` provide slightly different promises.  `PartialEq`
+  guarantees symmetric (`a == b` implies `b == a`) and transitive (if `a == b`
+  and `b == c` then `a == c`) properties, but not the reflexive (`a == a`)
+  property.  `Eq` adds the reflexive property guarantee.
 
 ## Iterator Traits
 
@@ -59,6 +76,8 @@ Collections should implement [FromIterator] and [Extend].
 [FromIterator]: https://doc.rust-lang.org/core/iter/trait.FromIterator.html
 
 ## Mathy Traits
+
+Operations from https://doc.rust-lang.org/core/ops/#traits .
 
 | Trait | Associated operation |
 | --- | --- |
@@ -141,4 +160,8 @@ Collections should implement [FromIterator] and [Extend].
 [FusedIterator]: https://doc.rust-lang.org/core/iter/trait.FusedIterator.html
 [Product]: https://doc.rust-lang.org/core/iter/trait.Product.html
 
+## References
+
+* [The Rust Book 10.2: Traits](https://doc.rust-lang.org/book/ch10-02-traits.html)
+* [The Common Rust Traits](https://stevedonovan.github.io/rustifications/2018/09/08/common-rust-traits.html)
 
