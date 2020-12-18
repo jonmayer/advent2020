@@ -34,7 +34,7 @@ property.  `Eq` adds the reflexive property guarantee.
 ## Iterator Traits
 
 | Trait | Your type is ... |
-| \-\-\- | \-\-\- |
+| --- | --- |
 | [Iterator][iterator] | an iterator. |
 | [IntoIterator][intoiterator] | something iterable, ie `foo.iter()`. |
 | [Sum][sum] | an iterator that supports `foo.sum()`. |
@@ -48,7 +48,7 @@ post](https://www.philipdaniels.com/blog/2019/rust-api-design2/) for details.
 Collections should implement [FromIterator][fromiterator] and [Extend][extend].
 
 | Trait | Your type is ... |
-| \-\-\- | \-\-\- |
+| --- | --- |
 | [FromIterator][fromiterator] | a collection that works with `iter.collect()`. |
 | [Extend][extend] | a collection that supports `foo.extend(iterable)`. |
 
@@ -57,7 +57,7 @@ Collections should implement [FromIterator][fromiterator] and [Extend][extend].
 Operations from https://doc.rust-lang.org/core/ops/\#traits .
 
 | Trait | Associated operation |
-| \-\-\- | \-\-\- |
+| --- | --- |
 | [Add][add] | The addition operator +. |
 | [AddAssign][addassign] | The addition assignment operator +=. |
 | [BitAnd][bitand] | The bitwise AND operator &. |
@@ -93,7 +93,7 @@ Operations from https://doc.rust-lang.org/core/ops/\#traits .
 ## Less Common Traits
 
 | Trait | Your type is ... |
-| \-\-\- | \-\-\- |
+| --- | --- |
 | [DoubleEndedIterator][doubleendediterator] | An [Iterator][iterator] that can be iterated forwards or backwards. |
 | [ExactSizeIterator][exactsizeiterator] | An [Iterator][iterator] with an efficient `len` method. |
 | [FusedIterator][fusediterator] | An iterator that always continues to yield None when exhausted. |
