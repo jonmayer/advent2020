@@ -17,8 +17,8 @@ TODO: mark which traits are derive-able and which aren't.
 | [Read][read] | Read from I/O stream. | No. |
 | [Write][write] | Write to I/O stream. | No. |
 | [Error][error] | Can be used as an error. | Yes if impl Display and Debug. |
-| [Eq][eq] | Equality ([note 1](#eq)) | If all fields implement Eq. |
-| [PartialEq][partialeq] | Partial Equality ([note 1](#eq)) | If all fields implement Eq or PartialEq. |
+| [Eq][eq] | Equality ([note 1](#note-1)) | If all fields implement Eq. |
+| [PartialEq][partialeq] | Partial Equality ([note 1](#note-1)) | If all fields implement Eq or PartialEq. |
 | [Ord][ord] | |  |
 | [PartialOrd][partialord] | |  |
 
