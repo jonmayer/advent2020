@@ -24,7 +24,7 @@ impl Range {
 #[derive(Clone,Debug,Default)]
 struct Field {
     name: String,
-    id: u32,
+    id: u32,  // is always a power of 2.
     rules: Vec<Range>,
 }
 
@@ -137,6 +137,7 @@ struct TicketDecoder {
     field_id: Vec<u32>,  // maps position to bitmap
 }
 
+// True if bitmap is a power of 2.
 fn bitmap_has_one_bit_set(bitmap: u32) -> bool {
     return (bitmap & (bitmap - 1)) == 0;
 }
@@ -157,7 +158,7 @@ impl TicketDecoder {
         self.field_id.clear();
         self.field_id.resize(positions as usize, 0u32);
         for position in 0u32..positions {
-            let mut bitmask: u32 = 0xFFFFFFFF;
+            let mut bitmask: u32 = !0;
             for ticket in tickets.iter().filter(|x| x.p1_is_valid(&matcher)) {
                 let value = ticket.values[position as usize];
                 bitmask &= matcher.bitmap_of_valid_fields(value);
