@@ -74,7 +74,7 @@ impl BitVector {
 // Then, inspired by my friend Girts' implementation, I noticed that I could
 // have used a HashSet instead.  I tried it so I could benchmark the approach.
 #[derive(Clone)]
-#[cfg(all(feature = "hashset", feature = "defaulthash"))]
+#[cfg(all(feature = "hashset", feature = "hash-default"))]
 struct BitVector {
     data: HashSet<usize>,
 }

@@ -17,7 +17,9 @@ ahash = "0.6"
 criterion = "0.3"
 
 [features]
+# if the hashset feature is used, exactly one of the hash-* features must also be specified.
 hashset = []
+hash-default = []
 hash-xx = []
 hash-fx = []
 hash-a = []

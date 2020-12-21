@@ -156,7 +156,7 @@ very performant.  I tried some other hashing algorithms, too:
 | Implementation | Benchmark | Command |
 | --- | --- | --- |
 | bit vector | 8.2491 ms | `cargo bench` |
-| Default HashSet | 140.07 ms | `cargo bench --features hashset` |
+| Default HashSet | 140.07 ms | `cargo bench --features "hashset hash-default"` |
 | twox-hash HashSet | 134.41 ms | `cargo bench --features "hashset hash-xx"` |
 | fxhash HashSet | 144.60 ms | `cargo bench --features "hashset hash-fx"` |
 | ahash HashSet | 70.951 ms | `cargo bench --features "hashset hash-a"` |
