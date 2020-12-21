@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 #[cfg(feature = "hashset")]
 use std::collections::HashSet;
 use std::hash::BuildHasherDefault;
@@ -332,11 +335,12 @@ struct HyperVoxels {
     max_z: isize,
     min_w: isize,
     max_w: isize,
+    offsets: Vec<usize>,
 }
 
 impl HyperVoxels {
     fn new(n: usize) -> HyperVoxels {
-        HyperVoxels {
+        let mut this = HyperVoxels {
             n,
             nsquared: n * n,
             min_x: 0, max_x: 0,
@@ -344,7 +348,21 @@ impl HyperVoxels {
             min_z: 0, max_z: 0,
             min_w: 0, max_w: 0,
             bits: BitVector::new(n*n*n*n),
+            offsets: Vec::new(),
+        };
+        for w in -1..=1 {
+            for z in -1..=1 {
+                for y in -1..=1 {
+                    for x in -1..=1 {
+                        if (w == 0) && (z == 0) && (y == 0) && (x == 0) {
+                            continue;
+                        }
+                        this.offsets.push(this.coord_to_index(x, y, z, w));
+                    }
+                }
+            }
         }
+        this
     }
 
     fn initialize(&mut self, text: &str) {
@@ -443,6 +461,7 @@ impl HyperVoxels {
     // ###    11322    ..##.
     //        12321    ..#..
     //
+    #[cfg(not(feature = "hashset"))]
     fn update(&mut self) -> HyperVoxels {
         let n = self.n;
         let mut v = HyperVoxels { 
@@ -476,6 +495,47 @@ impl HyperVoxels {
                 }  // y
             }  // z
         }  // w
+        return v;
+    }
+
+    #[cfg(feature = "hashset")]
+    fn update(&mut self) -> HyperVoxels {
+        let n = self.n;
+        let mut v = HyperVoxels { 
+            n,
+            nsquared: n * n,
+            min_x: self.min_x, max_x: self.max_x,
+            min_y: self.min_y, max_y: self.max_y,
+            min_z: self.min_z, max_z: self.max_z,
+            min_w: self.min_w, max_w: self.max_w,
+            // Since world is mirrored in z-axis, we need N/2 planes for z.
+            bits: BitVector::new(n*n*n*n),
+            offsets: self.offsets.clone(),
+        };
+        v.bits = self.bits.clone();
+
+        for active_index in self.bits.data.iter() {
+            for offset in self.offsets.iter() {
+                // check each neighbor
+                let check_index = active_index + offset;
+                // count neighbors of "check_index" voxel:
+                let count = self.offsets.iter()
+                    .map(|x| check_index + x)
+                    .filter(|x| self.bits.data.contains(x))
+                    .count();
+                let active = self.bits.data.contains(&check_index);
+                if active {
+                    if (count < 2) || (count > 3) {
+                        v.bits.data.remove(&check_index);
+                    }
+                } else {
+                    // inactive
+                    if count == 3 {
+                        v.bits.data.insert(check_index);
+                    }
+                }
+            }  // offset
+        }  // active_index
         return v;
     }
 }  // impl HyperVoxels 

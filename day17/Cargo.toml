@@ -12,6 +12,7 @@ edition = "2018"
 twox-hash = "1"
 fxhash = "0"
 ahash = "0.6"
+lazy_static = "1"
 
 [dev-dependencies]
 criterion = "0.3"

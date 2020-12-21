@@ -142,24 +142,16 @@ I've started to build a catalog of commonly used [traits](traits.md).
 ### 2020-12-21
 
 *Day 17* I implemented a bitvector to represent the "pocket universe", but others
-used a HashSet to represent the sparse data.  I decided to benchmark the two
-versions:
-
-| Implementation | Benchmark |
-| --- | --- |
-| BitVector | 8.2491 ms |
-| HashSet | 140.07 ms |
-
-Yipes!  It looks like the default hasher for std::collections is Sip, which is
-very performant.  I tried some other hashing algorithms, too:
+used a HashSet to represent the sparse data.  I decided to benchmark these
+approaches, and also to benchmark different hashing algorithms while I was at it.
 
 | Implementation | Benchmark | Command |
 | --- | --- | --- |
-| bit vector | 8.2491 ms | `cargo bench` |
-| Default HashSet | 140.07 ms | `cargo bench --features "hashset hash-default"` |
-| twox-hash HashSet | 134.41 ms | `cargo bench --features "hashset hash-xx"` |
-| fxhash HashSet | 144.60 ms | `cargo bench --features "hashset hash-fx"` |
-| ahash HashSet | 70.951 ms | `cargo bench --features "hashset hash-a"` |
+| bit vector        | 8.2491 ms | `cargo bench` |
+| Default HashSet   | 14.234 ms | `cargo bench --features "hashset hash-default"` |
+| twox-hash HashSet | 12.153 ms | `cargo bench --features "hashset hash-xx"` |
+| fxhash HashSet    | 2.9627 ms | `cargo bench --features "hashset hash-fx"` |
+| ahash HashSet     | 6.2255 ms | `cargo bench --features "hashset hash-a"` |
 
 ## See Also
 
