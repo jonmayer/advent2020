@@ -1,74 +1,80 @@
-#[macro_use]
-extern crate lazy_static;
+//#[macro_use]
+//extern crate lazy_static;
 
-use std::collections::HashSet;
-use std::hash::BuildHasherDefault;
-use twox_hash::XxHash64;
-use fxhash::FxHashSet;
-use ahash::AHashSet;
-
-mod bitvector;
-
+// I rolled my own BitVector class after having difficulty with the BitVec crate.  In particular, I
+// kept using BitVec::splice to attempt to set a single bit, and BitVec::splice kept performing
+// unexpected shifts on my bit vector.  Instead of diving deeper, I threw away BitVec and rewrote
+// it in about 10 minutes.
+//
+// Getting back to BitVec now, I think I see the problem.  I get the impression that BitVec::splice
+// was never meant to be a public interface, and contains ominous warnings such as "It is
+// unspecified how many bits are removed from the vector if the Splice value is leaked."  While I
+// thought BitVec::splice was performing the splice operation, it now seems that it was returning
+// an iterator that had to be drained for splice to complete.  Muy confusing!
+//
+// It turns out that what I really wanted was to get a mutable BitSlice object that covered my
+// BitVec vector, and that the BitSlice object would provide the set method I was hoping for:
+//
+//    fn set(&mut self, index: usize, value: bool) {
+//       self.bits.as_mut_bitslice().set(index, value);
+//    }
+//      
+// Ah well.
 #[derive(Clone)]
-#[cfg(feature = "hash-default")]
-struct BitSet {
-    data: HashSet<usize>,
+pub struct BitVector {
+    data: Vec<u64>,
 }
 
-#[derive(Clone)]
-#[cfg(feature = "hash-xx")]
-struct BitSet {
-    data: HashSet<usize, BuildHasherDefault<XxHash64>>,
-}
-
-#[derive(Clone)]
-#[cfg(feature = "hash-fx")]
-struct BitSet {
-    data: FxHashSet<usize>,
-}
-
-#[derive(Clone)]
-#[cfg(feature = "hash-a")]
-struct BitSet {
-    data: AHashSet<usize>,
-}
-
-impl BitSet {
-    fn new(_: usize) -> BitSet {
-        BitSet {
-            data: Default::default(),
-        }
+impl BitVector {
+    fn new(bits: usize) -> BitVector {
+        let words: usize = (bits + 63) / 64;
+        let mut bv = BitVector {
+            data: Vec::new(),
+        };
+        bv.data.resize(words, 0);
+        return bv;
     }
 
     fn get(&self, index: usize) -> bool {
-        return self.data.contains(&index);
+        let word = index / 64;
+        let mask: u64 = 1 << (index % 64);
+        return self.data[word] & mask != 0;
     }
 
     fn count_ones(&self, start: usize, end: usize) -> usize {
         return (start..end)
-            .map(|x| if self.data.contains(&x) { 1 } else { 0 })
+            .map(|i| if self.get(i) { 1 } else { 0 })
             .sum();
     }
 
     fn count_all_ones(&self) -> usize {
-        return self.data.len();
+        return self.data.iter()
+            .map(|&x| x.count_ones() as usize)
+            .sum();
     }
 
     fn set(&mut self, index: usize, value: bool) {
-        if value {
-            self.data.insert(index);
-        } else {
-            self.data.remove(&index);
-        }
+        let word = index / 64;
+        let mask: u64 = 1 << (index % 64);
+        let mut data: u64 = self.data[word];
+        data &= !mask;
+        data |= if value { mask } else { 0 };
+        self.data[word]  = data;
     }
-        
 }
 
+/*
+impl Iterator for BitVector {
+    fn next() -> usize {
+}
+*/
+
+
 // A voxel map of the pocket universe.
-pub struct Voxels {
+pub struct VoxelsBV {
     n: usize,
     nsquared: usize,
-    bits: BitSet,
+    bits: BitVector,
     min_x: isize,
     max_x: isize,
     min_y: isize,
@@ -76,16 +82,16 @@ pub struct Voxels {
     max_z: isize,
 }
 
-impl Voxels {
-    pub fn new(n: usize) -> Voxels {
-        Voxels {
+impl VoxelsBV {
+    pub fn new(n: usize) -> VoxelsBV {
+        VoxelsBV {
             n,
             nsquared: n * n,
             min_x: 0, max_x: 0,
             min_y: 0, max_y: 0,
             max_z: 0,
             // Since world is mirrored in z-axis, we need N/2 planes for z.
-            bits: BitSet::new(n*n*n/2),
+            bits: BitVector::new(n*n*n/2),
         }
     }
 
@@ -106,10 +112,10 @@ impl Voxels {
 
     pub fn count_all_ones(&self) -> usize {
         let sum = self.bits.count_all_ones();
-        let mirrored: usize = self.bits.data.iter()
-                .map(|index| self.index_to_z_coord(*index as usize))
-                .filter(|z| *z != 0)
-                .count();
+        let end_of_z0 = self.nsquared / 64;
+        let mirrored: usize = (end_of_z0..self.bits.data.len())
+            .map(|i| self.bits.data[i].count_ones() as usize)
+            .sum();
         return sum + mirrored;
     }
 
@@ -204,16 +210,16 @@ impl Voxels {
     // ###    11322    ..##.
     //        12321    ..#..
     //
-    pub fn update(&mut self) -> Voxels {
+    pub fn update(&mut self) -> VoxelsBV {
         let n = self.n;
-        let mut v = Voxels { 
+        let mut v = VoxelsBV { 
             n,
             nsquared: n * n,
             min_x: self.min_x, max_x: self.max_x,
             min_y: self.min_y, max_y: self.max_y,
             max_z: self.max_z,
             // Since world is mirrored in z-axis, we need N/2 planes for z.
-            bits: BitSet::new(n*n*n/2),
+            bits: BitVector::new(n*n*n/2),
         };
         v.bits = self.bits.clone();
         for z in 0..(self.max_z + 2) {
@@ -238,16 +244,16 @@ impl Voxels {
         }  // z
         return v;
     }
-}  // impl Voxels 
+}  // impl VoxelsBV 
 
-// Like Voxels, but in 4 dimensions.
+// Like VoxelsBV, but in 4 dimensions.
 //
 // While the result is going to have z and w axis symmetry, I found myself having to think too hard
 // about how symmetry works in 4 dimensions so I dropped that optimization.
-pub struct HyperVoxels {
+pub struct HyperVoxelsBV {
     n: usize,
     nsquared: usize,
-    bits: BitSet,
+    bits: BitVector,
     min_x: isize,
     max_x: isize,
     min_y: isize,
@@ -259,16 +265,16 @@ pub struct HyperVoxels {
     offsets: Vec<usize>,
 }
 
-impl HyperVoxels {
-    fn new(n: usize) -> HyperVoxels {
-        let mut this = HyperVoxels {
+impl HyperVoxelsBV {
+    pub fn new(n: usize) -> HyperVoxelsBV {
+        let mut this = HyperVoxelsBV {
             n,
             nsquared: n * n,
             min_x: 0, max_x: 0,
             min_y: 0, max_y: 0,
             min_z: 0, max_z: 0,
             min_w: 0, max_w: 0,
-            bits: BitSet::new(n*n*n*n),
+            bits: BitVector::new(n*n*n*n),
             offsets: Vec::new(),
         };
         for w in -1..=1 {
@@ -286,7 +292,7 @@ impl HyperVoxels {
         this
     }
 
-    fn initialize(&mut self, text: &str) {
+    pub fn initialize(&mut self, text: &str) {
         let lines = text.lines();
         let offset = (lines.clone().count()/2) as isize;
         for (y, line) in lines.enumerate() {
@@ -301,7 +307,7 @@ impl HyperVoxels {
         }
     }
 
-    fn count_all_ones(&self) -> usize {
+    pub fn count_all_ones(&self) -> usize {
         return self.bits.count_all_ones();
     }
 
@@ -382,9 +388,9 @@ impl HyperVoxels {
     // ###    11322    ..##.
     //        12321    ..#..
     //
-    fn update(&mut self) -> HyperVoxels {
+    pub fn update(&mut self) -> HyperVoxelsBV {
         let n = self.n;
-        let mut v = HyperVoxels { 
+        let mut v = HyperVoxelsBV { 
             n,
             nsquared: n * n,
             min_x: self.min_x, max_x: self.max_x,
@@ -392,71 +398,31 @@ impl HyperVoxels {
             min_z: self.min_z, max_z: self.max_z,
             min_w: self.min_w, max_w: self.max_w,
             // Since world is mirrored in z-axis, we need N/2 planes for z.
-            bits: BitSet::new(n*n*n*n),
+            bits: BitVector::new(n*n*n*n),
             offsets: self.offsets.clone(),
         };
         v.bits = self.bits.clone();
-
-        for active_index in self.bits.data.iter() {
-            for offset in self.offsets.iter() {
-                // check each neighbor
-                let check_index = active_index + offset;
-                // count neighbors of "check_index" voxel:
-                let count = self.offsets.iter()
-                    .map(|x| check_index + x)
-                    .filter(|x| self.bits.data.contains(x))
-                    .count();
-                let active = self.bits.data.contains(&check_index);
-                if active {
-                    if (count < 2) || (count > 3) {
-                        v.bits.data.remove(&check_index);
-                    }
-                } else {
-                    // inactive
-                    if count == 3 {
-                        v.bits.data.insert(check_index);
-                    }
-                }
-            }  // offset
-        }  // active_index
+        for w in (self.min_w-1)..(self.max_w + 2) {
+            for z in (self.min_z-1)..(self.max_z + 2) {
+                for y in (self.min_y - 1)..(self.max_y + 2) {
+                    for x in (self.min_x - 1)..(self.max_x + 2) {
+                        let count = self.count_adjacent(x, y, z, w);
+                        let active = self.getbit(x, y, z, w);
+                        if active {
+                            if (count < 2) || (count > 3) {
+                                v.setbit(x, y, z, w, false);
+                            }
+                        } else {
+                            // inactive
+                            if count == 3 {
+                                v.setbit(x, y, z, w, true);
+                            }
+                        }
+                    }  // x
+                }  // y
+            }  // z
+        }  // w
         return v;
     }
-}  // impl HyperVoxels 
+}  // impl HyperVoxelsBV 
 
-pub fn part1(contents: &str) -> usize {
-    let mut voxels = Voxels::new(128);
-    voxels.initialize(contents);
-    voxels.print();
-    for _ in 0..6 {
-        voxels = voxels.update();
-    }
-    return voxels.count_all_ones();
-}
-
-pub fn part2(contents: &str) -> usize {
-    let mut voxels = HyperVoxels::new(64);
-    voxels.initialize(contents);
-    for _ in 0..6 {
-        voxels = voxels.update();
-    }
-    return voxels.count_all_ones();
-}
-
-pub fn bv_part1(contents: &str) -> usize {
-    let mut voxels = bitvector::VoxelsBV::new(128);
-    voxels.initialize(contents);
-    voxels.print();
-    for _ in 0..6 {
-        voxels = voxels.update();
-    }
-    return voxels.count_all_ones();
-}
-
-pub fn bv_part2(contents: &str) -> usize {
-    let mut voxels = bitvector::HyperVoxelsBV::new(64);
-    voxels.initialize(contents);
-    for _ in 0..6 {
-        voxels = voxels.update();
-    }
-    return voxels.count_all_ones();
-}
