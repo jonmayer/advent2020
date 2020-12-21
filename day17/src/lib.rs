@@ -1,5 +1,9 @@
 #[cfg(feature = "hashset")]
 use std::collections::HashSet;
+use std::hash::BuildHasherDefault;
+use twox_hash::XxHash64;
+use fxhash::FxHashSet;
+use ahash::AHashSet;
 
 // I rolled my own BitVector class after having difficulty with the BitVec crate.  In particular, I
 // kept using BitVec::splice to attempt to set a single bit, and BitVec::splice kept performing
@@ -69,23 +73,35 @@ impl BitVector {
 
 // Then, inspired by my friend Girts' implementation, I noticed that I could
 // have used a HashSet instead.  I tried it so I could benchmark the approach.
-//
-// My benchmark results:
-//   Time | features      | Implementation
-//   ---- | ------------- | --------------
-//        |               | Vec<u64>
-//        | hashset       | HashSet<usize>  (default SipHash)
-#[cfg(feature = "hashset")]
 #[derive(Clone)]
+#[cfg(all(feature = "hashset", feature = "defaulthash"))]
 struct BitVector {
     data: HashSet<usize>,
+}
+
+#[derive(Clone)]
+#[cfg(all(feature = "hashset", feature = "hash-xx"))]
+struct BitVector {
+    data: HashSet<usize, BuildHasherDefault<XxHash64>>,
+}
+
+#[derive(Clone)]
+#[cfg(all(feature = "hashset", feature = "hash-fx"))]
+struct BitVector {
+    data: FxHashSet<usize>,
+}
+
+#[derive(Clone)]
+#[cfg(all(feature = "hashset", feature = "hash-a"))]
+struct BitVector {
+    data: AHashSet<usize>,
 }
 
 #[cfg(feature = "hashset")]
 impl BitVector {
     fn new(_: usize) -> BitVector {
         BitVector {
-            data: HashSet::new(),
+            data: Default::default(),
         }
     }
 

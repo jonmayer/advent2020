@@ -9,12 +9,18 @@ edition = "2018"
 [dependencies]
 #bitvector = "0.1"
 #bitvec = "0.19"
+twox-hash = "1"
+fxhash = "0"
+ahash = "0.6"
 
 [dev-dependencies]
 criterion = "0.3"
 
 [features]
 hashset = []
+hash-xx = []
+hash-fx = []
+hash-a = []
 
 [[bench]]
 name = "benchmark"
