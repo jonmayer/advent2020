@@ -13,6 +13,9 @@ edition = "2018"
 [dev-dependencies]
 criterion = "0.3"
 
+[features]
+hashset = []
+
 [[bench]]
 name = "benchmark"
 harness = false

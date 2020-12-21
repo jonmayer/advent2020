@@ -1,3 +1,4 @@
+#[cfg(feature = "hashset")]
 use std::collections::HashSet;
 
 // I rolled my own BitVector class after having difficulty with the BitVec crate.  In particular, I
@@ -19,11 +20,13 @@ use std::collections::HashSet;
 //    }
 //      
 // Ah well.
+#[cfg(not(feature = "hashset"))]
 #[derive(Clone)]
 struct BitVector {
     data: Vec<u64>,
 }
 
+#[cfg(not(feature = "hashset"))]
 impl BitVector {
     fn new(bits: usize) -> BitVector {
         let words: usize = (bits + 63) / 64;
@@ -59,6 +62,53 @@ impl BitVector {
         data &= !mask;
         data |= if value { mask } else { 0 };
         self.data[word]  = data;
+    }
+        
+}
+
+
+// Then, inspired by my friend Girts' implementation, I noticed that I could
+// have used a HashSet instead.  I tried it so I could benchmark the approach.
+//
+// My benchmark results:
+//   Time | features      | Implementation
+//   ---- | ------------- | --------------
+//        |               | Vec<u64>
+//        | hashset       | HashSet<usize>  (default SipHash)
+#[cfg(feature = "hashset")]
+#[derive(Clone)]
+struct BitVector {
+    data: HashSet<usize>,
+}
+
+#[cfg(feature = "hashset")]
+impl BitVector {
+    fn new(_: usize) -> BitVector {
+        BitVector {
+            data: HashSet::new(),
+        }
+    }
+
+    fn get(&self, index: usize) -> bool {
+        return self.data.contains(&index);
+    }
+
+    fn count_ones(&self, start: usize, end: usize) -> usize {
+        return (start..end)
+            .map(|x| if self.data.contains(&x) { 1 } else { 0 })
+            .sum();
+    }
+
+    fn count_all_ones(&self) -> usize {
+        return self.data.len();
+    }
+
+    fn set(&mut self, index: usize, value: bool) {
+        if value {
+            self.data.insert(index);
+        } else {
+            self.data.remove(&index);
+        }
     }
         
 }
@@ -103,15 +153,24 @@ impl Voxels {
         }
     }
 
+    #[cfg(feature = "hashset")]
     pub fn count_all_ones(&self) -> usize {
+        let sum = self.bits.count_all_ones();
+        let mirrored: usize = self.bits.data.iter()
+                .map(|index| self.index_to_z_coord(*index as usize))
+                .filter(|z| *z != 0)
+                .count();
+        return sum + mirrored;
+    }
+
+    #[cfg(not(feature = "hashset"))]
+    pub fn count_all_ones(&self) -> usize {
+        let sum = self.bits.count_all_ones();
         let end_of_z0 = self.nsquared / 64;
-        let z0_sum: usize = (0..end_of_z0)
+        let mirrored: usize = (end_of_z0..self.bits.data.len())
             .map(|i| self.bits.data[i].count_ones() as usize)
             .sum();
-        let rest_sum: usize = (end_of_z0..self.bits.data.len())
-            .map(|i| self.bits.data[i].count_ones() as usize)
-            .sum();
-        return z0_sum + 2 * rest_sum;
+        return sum + mirrored;
     }
 
     pub fn print(&self) {
@@ -134,6 +193,12 @@ impl Voxels {
         let y = (y + (self.n as isize)/2) as usize;
         let absz = z.abs() as usize;  // because z is a mirrored axis of symmetry.
         return x + self.n*y + self.nsquared*absz;
+    }
+
+    fn index_to_z_coord(&self, index: usize) -> isize {
+        let absz: usize = index / self.nsquared;
+        let z: isize = (absz as isize) - ((self.n/2) as isize);
+        return z;
     }
 
     fn getbit(&self, x: isize, y: isize, z: isize) -> bool {

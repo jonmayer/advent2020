@@ -139,6 +139,20 @@ remembered that Rust compiles in debug mode by default.
 
 I've started to build a catalog of commonly used [traits](traits.md).
 
+### 2020-12-21
+
+*Day 17* I implemented a bitvector to represent the "pocket universe", but others
+used a HashSet to represent the sparse data.  I decided to benchmark the two
+versions:
+
+| Implementation | Benchmark |
+| --- | --- |
+| BitVector | 8.2491 ms |
+| HashSet | 140.07 ms |
+
+Yipes!  It looks like the default hasher for std::collections is Sip, which is
+very performant.  I'll add some alternatives to my benchmark and try again.
+
 ## See Also
 
 Some friends of mine have their own solutions on github, too:
