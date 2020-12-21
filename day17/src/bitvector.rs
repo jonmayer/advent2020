@@ -26,7 +26,7 @@ pub struct BitVector {
 }
 
 impl BitVector {
-    fn new(bits: usize) -> BitVector {
+    pub fn new(bits: usize) -> BitVector {
         let words: usize = (bits + 63) / 64;
         let mut bv = BitVector {
             data: Vec::new(),
@@ -35,25 +35,26 @@ impl BitVector {
         return bv;
     }
 
-    fn get(&self, index: usize) -> bool {
+    pub fn get(&self, index: usize) -> bool {
         let word = index / 64;
         let mask: u64 = 1 << (index % 64);
+        if word >= self.data.len() { return false; }
         return self.data[word] & mask != 0;
     }
 
-    fn count_ones(&self, start: usize, end: usize) -> usize {
+    pub fn count_ones(&self, start: usize, end: usize) -> usize {
         return (start..end)
             .map(|i| if self.get(i) { 1 } else { 0 })
             .sum();
     }
 
-    fn count_all_ones(&self) -> usize {
+    pub fn count_all_ones(&self) -> usize {
         return self.data.iter()
             .map(|&x| x.count_ones() as usize)
             .sum();
     }
 
-    fn set(&mut self, index: usize, value: bool) {
+    pub fn set(&mut self, index: usize, value: bool) {
         let word = index / 64;
         let mask: u64 = 1 << (index % 64);
         let mut data: u64 = self.data[word];
@@ -61,14 +62,63 @@ impl BitVector {
         data |= if value { mask } else { 0 };
         self.data[word]  = data;
     }
+
+    pub fn iter(&self) -> BitVectorIterator {
+        return BitVectorIterator::new(self.data.iter());
+    }
 }
 
-/*
-impl Iterator for BitVector {
-    fn next() -> usize {
+pub struct BitVectorIterator<'a> {
+    it: std::slice::Iter<'a, u64>,
+    current: Option<&'a u64>,
+    word: isize,
+    bit: usize,
 }
-*/
 
+impl<'a> BitVectorIterator<'a> {
+    fn new(it: std::slice::Iter<'a, u64>) -> BitVectorIterator<'a> {
+        BitVectorIterator {it, current: Option::None, word: -1, bit: 0}
+    }
+
+    fn advance_to_next_word(&mut self) -> bool {
+        self.current = self.it.next();
+        self.word += 1;
+        self.bit = 0;
+        return self.current.is_none();
+    }
+
+}
+
+impl<'a> Iterator for BitVectorIterator<'a> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<usize> {
+        loop {
+            if self.current.is_none() {
+                if self.advance_to_next_word() {
+                  return Option::None;
+                }
+            }
+            // skip all zero values:
+            while *self.current.unwrap() == 0 {
+                if self.advance_to_next_word() {
+                  return Option::None;
+                }
+            }
+            let value: u64 = *self.current.unwrap();
+            while self.bit < 64 {
+                if (value & (1 << self.bit)) != 0 {
+                    let index: usize = self.word as usize * 64 + self.bit;
+                    self.bit += 1;
+                    return Option::Some(index);
+                }
+                self.bit += 1;
+            }
+            // we've arrived at bit 32, so throw our data away.
+            self.current = Option::None;
+        }
+    }
+}
 
 // A voxel map of the pocket universe.
 pub struct VoxelsBV {
@@ -402,26 +452,30 @@ impl HyperVoxelsBV {
             offsets: self.offsets.clone(),
         };
         v.bits = self.bits.clone();
-        for w in (self.min_w-1)..(self.max_w + 2) {
-            for z in (self.min_z-1)..(self.max_z + 2) {
-                for y in (self.min_y - 1)..(self.max_y + 2) {
-                    for x in (self.min_x - 1)..(self.max_x + 2) {
-                        let count = self.count_adjacent(x, y, z, w);
-                        let active = self.getbit(x, y, z, w);
-                        if active {
-                            if (count < 2) || (count > 3) {
-                                v.setbit(x, y, z, w, false);
-                            }
-                        } else {
-                            // inactive
-                            if count == 3 {
-                                v.setbit(x, y, z, w, true);
-                            }
-                        }
-                    }  // x
-                }  // y
-            }  // z
-        }  // w
+
+        for active_index in self.bits.iter() {
+            for offset in self.offsets.iter() {
+                // check each neighbor
+                let check_index = active_index + offset;
+                // count neighbors of "check_index" voxel:
+                let count = self.offsets.iter()
+                    .map(|x| check_index + x)
+                    .filter(|x| self.bits.get(*x))
+                    .count();
+                let active = self.bits.get(check_index);
+                if active {
+                    if (count < 2) || (count > 3) {
+                        v.bits.set(check_index, false);
+                    }
+                } else {
+                    // inactive
+                    if count == 3 {
+                        v.bits.set(check_index, true);
+                    }
+                }
+            }  // offset
+        }  // active_index
+
         return v;
     }
 }  // impl HyperVoxelsBV 

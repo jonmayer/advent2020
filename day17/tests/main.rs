@@ -3,6 +3,31 @@ mod tests {
 
 use day17::Voxels;
 
+use day17::bitvector::BitVector;
+
+#[test]
+pub fn test_bitvector_iterator() {
+    let mut bv = BitVector::new(1024);
+    bv.set(100, true);
+    bv.set(800, true);
+    bv.set(803, true);
+    bv.set(801, true);
+    bv.set(102, true);
+    bv.set(102, false);
+    bv.set(3, true);
+    bv.set(31, true);
+    bv.set(40, true);
+    let mut it = bv.iter();
+    assert_eq!(it.next(), Option::Some(3));
+    assert_eq!(it.next(), Option::Some(31));
+    assert_eq!(it.next(), Option::Some(40));
+    assert_eq!(it.next(), Option::Some(100));
+    assert_eq!(it.next(), Option::Some(800));
+    assert_eq!(it.next(), Option::Some(801));
+    assert_eq!(it.next(), Option::Some(803));
+    assert_eq!(it.next(), Option::None);
+}
+
 #[test]
 pub fn test() {
     let mut voxels = Voxels::new(128);

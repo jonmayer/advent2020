@@ -7,7 +7,7 @@ use twox_hash::XxHash64;
 use fxhash::FxHashSet;
 use ahash::AHashSet;
 
-mod bitvector;
+pub mod bitvector;
 
 #[derive(Clone)]
 #[cfg(feature = "hash-default")]
