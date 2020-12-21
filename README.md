@@ -153,6 +153,11 @@ approaches, and also to benchmark different hashing algorithms while I was at it
 | fxhash HashSet    | 2.9627 ms | `cargo bench --features "hashset hash-fx"` |
 | ahash HashSet     | 6.2255 ms | `cargo bench --features "hashset hash-a"` |
 
+*Update*: I implemented custom iterator in BitVector that returns the indices of all
+non-zero bits.  I then was able to modify "update" in a way that behaves similarly
+to iterating over the members of a HashSet, so that only the neighbors of active bits
+evaluated.  Performance roughly doubled, to 3.6334 ms.
+
 ## See Also
 
 Some friends of mine have their own solutions on github, too:
