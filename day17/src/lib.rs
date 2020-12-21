@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 // I rolled my own BitVector class after having difficulty with the BitVec crate.  In particular, I
 // kept using BitVec::splice to attempt to set a single bit, and BitVec::splice kept performing
 // unexpected shifts on my bit vector.  Instead of diving deeper, I threw away BitVec and rewrote
@@ -41,6 +43,12 @@ impl BitVector {
     fn count_ones(&self, start: usize, end: usize) -> usize {
         return (start..end)
             .map(|i| if self.get(i) { 1 } else { 0 })
+            .sum();
+    }
+
+    fn count_all_ones(&self) -> usize {
+        return self.data.iter()
+            .map(|&x| x.count_ones() as usize)
             .sum();
     }
 
@@ -274,9 +282,7 @@ impl HyperVoxels {
     }
 
     fn count_all_ones(&self) -> usize {
-        return self.bits.data.iter()
-            .map(|&x| x.count_ones() as usize)
-            .sum();
+        return self.bits.count_all_ones();
     }
 
     fn coord_to_index(&self, x: isize, y: isize, z: isize, w: isize) -> usize {
