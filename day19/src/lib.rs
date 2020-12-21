@@ -14,14 +14,6 @@ impl Sequence {
                 .collect(),
         }
     }
-
-    fn len(&self) -> usize {
-        return self.rules.len();
-    }
-
-    fn to_string(&self) -> String {
-        format!("{:?}", self.rules)
-    }
 }
 
 #[derive(Debug)]
@@ -44,14 +36,12 @@ impl Rule {
         }
     }
 
-    fn to_string(&self) -> String {
-        match self {
-            Rule::Char(x) => format!("\"{}\"", *x as char),
-            Rule::Alternates(v) => v.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" | "),
-        }
-    }
 }
 
+// Chooser is used to exhaustively search decision space.   "state" is source
+// that provides up to 128 binary choices.  "count" keeps track of how many
+// decisions the Chooser is being asked to make on any given run, so that we
+// can abort early when the decision space is exhausted.
 struct Chooser {
     state: u128,
     count: u32,
@@ -78,18 +68,10 @@ impl Chooser {
 }
 
 
-#[derive(Copy,Clone,Debug)]
-struct RuleState {
-    index: usize,
-    rule_id: usize,
-    variant: usize,
-}
-
 #[derive(Debug)]
 pub struct RuleMap {
     m: HashMap<usize, Rule>,
     data: Vec<u8>,
-    stack: Vec<RuleState>,
 }
 
 impl RuleMap {
@@ -97,7 +79,6 @@ impl RuleMap {
         RuleMap {
             m: HashMap::new(),
             data: Vec::new(),
-            stack: Vec::new(),
         }
     }
 
