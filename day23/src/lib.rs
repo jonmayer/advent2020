@@ -1,6 +1,17 @@
+use std::fmt;
+
 #[derive(Default,Debug)]
 struct State {
     cups: [u8;9],  // digits are 0 based: 0 through 8 inclusive
+}
+
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for i in 0..9 {
+            write!(f, "{}", self.cups[i] + 1);
+        }
+        write!(f, "")
+    }
 }
 
 impl State {
@@ -134,44 +145,79 @@ impl Game {
         }
         println!("");
     }
+
+    fn range_to_string(&self, start: u32, count: u32) -> String {
+        let mut s = String::with_capacity(count as usize * 3);  // guess
+        let mut j = start;
+        for _ in 0..count {
+            s.push_str((j+1).to_string().as_str());
+            s.push(',');
+            j = self.cups[j as usize];
+        }
+        return s;
+    }
 }
 
-/*
 #[test]
 fn test_state() {
     let mut s = State::new();
     s.parse("389125467");
     for _i in 0..10 {
-        s.dump();
         s = s.do_round();
     }
     s.dump();
-}*/
+    assert_eq!("837419265", s.to_string());
+}
 
-#[test]
-fn part_1() {
+pub fn part_1() -> String {
     let mut s = State::new();
     s.parse("284573961");
-    for _i in 0..100 {s=s.do_round();}
-    s.dump();
+    for _ in 0..100 {s=s.do_round();}
+    return s.to_string();
 }
 
 #[test]
-fn part_2() {
+fn test_part_2() {
+    // const EXPECTED: [&'static str, ..20] = [
+    let expected = vec![
+        "1000000,2,8,4,5,7,3,9,6,1,10,11,12,13,14,15,16,17,18,19,",
+        "1000000,2,7,3,9,6,1,8,4,5,10,11,12,13,14,15,16,17,18,19,",
+        "1000000,2,7,1,8,4,5,3,9,6,10,11,12,13,14,15,16,17,18,19,",
+        "1000000,8,4,5,2,7,1,3,9,6,10,11,12,13,14,15,16,17,18,19,",
+        "1000000,8,4,5,2,9,6,10,7,1,3,11,12,13,14,15,16,17,18,19,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,7,1,3,11,15,16,17,18,19,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,7,1,3,11,15,19,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,7,1,3,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+        "1000000,8,4,5,2,9,6,10,12,13,14,16,17,18,20,21,22,24,25,26,",
+    ];
     let mut game = Game::new();
     game.parse("284573961");
-    // game.parse("389125467");
-    game.dump();
+    assert_eq!(expected[0], game.range_to_string(999999, 20));
     for i in 0..20 {
-        print!("round {}: ", i);
         game.do_round();
-        game.dump_range(999999, 20);
+        assert_eq!(expected[i + 1], game.range_to_string(999999, 20));
     }
-    game.do_n_rounds(10 * 1000 * 1000 - 20);
-    game.dump();
-    let a = dbg!(game.cups[0] as u64 + 1);
-    let b = dbg!(game.cups[game.cups[0] as usize]as u64 + 1);
+}
+
+pub fn part_2() -> String {
+    let mut game = Game::new();
+    game.parse("284573961");
+    game.do_n_rounds(10 * 1000 * 1000);
+    let a = game.cups[0] as u64 + 1;
+    let b = game.cups[game.cups[0] as usize]as u64 + 1;
     let c = a * b;
-    dbg!(c);
     assert_eq!(166298218695, c);
+    return c.to_string();
 }
