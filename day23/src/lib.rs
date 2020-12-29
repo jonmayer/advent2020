@@ -8,9 +8,9 @@ struct State {
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for i in 0..9 {
-            write!(f, "{}", self.cups[i] + 1);
+            write!(f, "{}", self.cups[i] + 1)?;
         }
-        write!(f, "")
+        Ok(())
     }
 }
 
@@ -44,7 +44,7 @@ impl State {
         }
     }
 
-    fn dump(&self) {
+    pub fn dump(&self) {
         for i in 0..9 {
             print!("{}", self.cups[i] + 1);
         }
