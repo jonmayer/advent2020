@@ -1,7 +1,7 @@
-use std::fs;
 use std::collections;
+use std::fs;
 
-#[derive(Copy,Clone,Debug,Default)]
+#[derive(Copy, Clone, Debug, Default)]
 struct Range {
     min: u32,
     max: u32,
@@ -21,16 +21,20 @@ impl Range {
     }
 }
 
-#[derive(Clone,Debug,Default)]
+#[derive(Clone, Debug, Default)]
 struct Field {
     name: String,
-    id: u32,  // is always a power of 2.
+    id: u32, // is always a power of 2.
     rules: Vec<Range>,
 }
 
 impl Field {
     fn new(line: &str, id: u32) -> Field {
-        let mut f = Field {name: "".to_string(), id, rules: Vec::new()};
+        let mut f = Field {
+            name: "".to_string(),
+            id,
+            rules: Vec::new(),
+        };
         let p1: Vec<&str> = line.split(": ").collect();
         f.name = p1[0].to_owned();
         let p2: Vec<&str> = p1[1].split(" or ").collect();
@@ -42,13 +46,15 @@ impl Field {
 
     fn check(&self, i: u32) -> bool {
         for r in &self.rules {
-            if r.check(i) { return true; }
+            if r.check(i) {
+                return true;
+            }
         }
         return false;
     }
 }
 
-#[derive(Clone,Debug,Default)]
+#[derive(Clone, Debug, Default)]
 struct Matcher {
     fields: Vec<Field>,
     map: collections::HashMap<String, u32>,
@@ -90,7 +96,7 @@ impl Matcher {
     }
 
     fn parse(&mut self, text: &str) {
-        let mut id = 1u32;  // id is also bit position.
+        let mut id = 1u32; // id is also bit position.
         for line in text.lines() {
             let line = line.trim();
             let field = Field::new(line, id);
@@ -100,7 +106,7 @@ impl Matcher {
     }
 }
 
-#[derive(Clone,Debug,Default)]
+#[derive(Clone, Debug, Default)]
 struct Ticket {
     values: Vec<u32>,
 }
@@ -108,9 +114,7 @@ struct Ticket {
 impl Ticket {
     fn new(text: &str) -> Ticket {
         Ticket {
-            values: text.split(",")
-                .map(|a| a.parse::<u32>().unwrap())
-                .collect(),
+            values: text.split(",").map(|a| a.parse::<u32>().unwrap()).collect(),
         }
     }
 
@@ -130,11 +134,10 @@ impl Ticket {
         }
         return true;
     }
-
 }
 
 struct TicketDecoder {
-    field_id: Vec<u32>,  // maps position to bitmap
+    field_id: Vec<u32>, // maps position to bitmap
 }
 
 // True if bitmap is a power of 2.
@@ -175,7 +178,9 @@ impl TicketDecoder {
                 let bm = self.field_id[position as usize];
                 if bitmap_has_one_bit_set(bm) {
                     for other_pos in 0u32..positions {
-                        if other_pos == position { continue; }
+                        if other_pos == position {
+                            continue;
+                        }
                         let mut other_bm = self.field_id[other_pos as usize];
                         other_bm &= !bm;
                         self.field_id[other_pos as usize] = other_bm;
@@ -184,31 +189,33 @@ impl TicketDecoder {
                     done = false;
                 }
             }
-            if done { break; }
+            if done {
+                break;
+            }
         }
         for position in 0u32..positions {
             let bitmask = self.field_id[position as usize];
             println!("Position {} -> bitmask {:#X}", position, bitmask);
-            assert_eq!(bitmask & (bitmask - 1), 0, "bitmask had more than one bit set!");
+            assert_eq!(
+                bitmask & (bitmask - 1),
+                0,
+                "bitmask had more than one bit set!"
+            );
         }
-
     }
 }
 
 fn main() {
     let inputfile = "input.txt";
-    let contents = fs::read_to_string(&inputfile)
-        .expect("Something went wrong reading the file");
+    let contents = fs::read_to_string(&inputfile).expect("Something went wrong reading the file");
     let parts: Vec<&str> = contents.split("\n\n").collect();
     let mut matcher = Matcher::new();
     matcher.parse(parts[0]);
     dbg!(&matcher);
 
     let mut ticket_lines = parts[2].lines();
-    ticket_lines.next();  // skip first line.
-    let tickets: Vec<Ticket> = ticket_lines
-        .map(|x| Ticket::new(x))
-        .collect();
+    ticket_lines.next(); // skip first line.
+    let tickets: Vec<Ticket> = ticket_lines.map(|x| Ticket::new(x)).collect();
     dbg!(&tickets);
 
     let p1_valid_cnt = tickets.iter().filter(|&x| x.p1_is_valid(&matcher)).count();
@@ -223,7 +230,9 @@ fn main() {
     let my_ticket = Ticket::new(parts[1].lines().nth(1).unwrap());
     let mut decoder = TicketDecoder::new();
     decoder.guess_fields(&matcher, &tickets);
-    let product: u64 = matcher.fields.iter()
+    let product: u64 = matcher
+        .fields
+        .iter()
         .filter(|f| f.name.starts_with("departure"))
         .map(|f| f.id)
         .map(|id| decoder.id_to_position(id))

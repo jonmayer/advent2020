@@ -11,18 +11,19 @@ fn part1(content: &str) -> i64 {
     // part 1
     let lines: Vec<&str> = content.lines().collect();
     let timestamp = lines[0].parse::<i64>().unwrap();
-    let bus_ids: Vec<i64> = lines[1].split(",")
+    let bus_ids: Vec<i64> = lines[1]
+        .split(",")
         .filter(|x| *x != "x")
         .map(|x| x.parse::<i64>().unwrap())
         .collect();
     dbg!(&bus_ids);
     // find the bus with the least wait time.
     // wait time is bus interval - (timestamp % interval).
-    let remainders: Vec<i64> = bus_ids.iter()
-        .map(|x| x - (timestamp % x))
-        .collect();
+    let remainders: Vec<i64> = bus_ids.iter().map(|x| x - (timestamp % x)).collect();
     dbg!(&remainders);
-    let (min_i, min_v) = remainders.iter().enumerate()
+    let (min_i, min_v) = remainders
+        .iter()
+        .enumerate()
         .min_by(|(_, a), (_, b)| a.cmp(b))
         .unwrap();
     dbg!(min_i, min_v);
@@ -34,7 +35,9 @@ fn part1(content: &str) -> i64 {
 // True iff all the items in a vector are equal.
 fn all_equal(x: &Vec<i128>) -> bool {
     for v in x[1..].iter() {
-        if *v != x[0] { return false };
+        if *v != x[0] {
+            return false;
+        };
     }
     return true;
 }
@@ -52,21 +55,28 @@ fn bf_converge_vector(ids: Vec<i128>, offsets: Vec<i128>) -> i128 {
     loop {
         // Compute r = k * ids - offset
         // Could have used ndarray but didn't want to open a new crate.
-        let r = ids.iter()
+        let r = ids
+            .iter()
             .zip(k.iter())
-            .map(|(a, b)| a*b)
+            .map(|(a, b)| a * b)
             .zip(offsets.iter())
             .map(|(a, b)| a - b)
             .collect();
 
-        if step % 100 == 0 { println!("step {}", step); }
+        if step % 100 == 0 {
+            println!("step {}", step);
+        }
         step += 1;
 
-        if all_equal(&r) { break; }
+        if all_equal(&r) {
+            break;
+        }
 
         // Increment k for the element with the lowest r value.
-        let (min_i, _) = r.iter().enumerate()
-            .min_by(|(_,a), (_,b)| a.cmp(b))
+        let (min_i, _) = r
+            .iter()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| a.cmp(b))
             .unwrap();
         k[min_i] += 1;
     }
@@ -109,11 +119,12 @@ impl Bus {
         self.start_time = a0;
         self.interval = self.interval * other.interval;
     }
-}  // impl Bus
+} // impl Bus
 
 fn part2(text: &str) -> i128 {
     // Parse bus ids:
-    let mut v: Vec<_> = text.split(",")
+    let mut v: Vec<_> = text
+        .split(",")
         .enumerate()
         .filter(|(_, id)| *id != "x")
         .collect();
@@ -121,10 +132,12 @@ fn part2(text: &str) -> i128 {
     dbg!(&v);
 
     // Construct bus ids to Bus objects, using index as the staggered start_time.
-    let buses: Vec<Bus> = v.iter()
-        .map(|(i, id)|
-             Bus { interval: id.parse::<i128>().unwrap(),
-                   start_time: (*i as i128) * -1, })
+    let buses: Vec<Bus> = v
+        .iter()
+        .map(|(i, id)| Bus {
+            interval: id.parse::<i128>().unwrap(),
+            start_time: (*i as i128) * -1,
+        })
         .collect();
     dbg!(&buses);
     let timer = howlong::HighResolutionTimer::new();
@@ -135,7 +148,7 @@ fn part2(text: &str) -> i128 {
         bus.combine_with_other_bus(&buses[i]);
     }
     dbg!(timer.elapsed());
-    return bus.start_time;  // Timestamp of first convergence.
+    return bus.start_time; // Timestamp of first convergence.
 }
 
 fn main() {
@@ -150,9 +163,8 @@ fn main() {
 
     // elegant faster solution over the same data:
     dbg!(part2(&"3,5,7,11"));
-  
+
     // the real solution to the input data set:
     let lines: Vec<&str> = content.lines().collect();
     dbg!("solution: ", part2(&lines[1]));
 }
-

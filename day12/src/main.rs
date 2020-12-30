@@ -7,8 +7,8 @@ use std::collections::HashMap;
 #[derive(Clone, Debug)]
 struct Ship {
     facing: i32, // 0 is east, 90 is north, 180 is west, 270 is south
-    x: i32, // west is negative, east is positive
-    y: i32, // south is negative, north is positive
+    x: i32,      // west is negative, east is positive
+    y: i32,      // south is negative, north is positive
 }
 
 type ShipMethodPtr = fn(&mut Ship, i32);
@@ -96,8 +96,8 @@ impl Ship {
 
 #[derive(Clone, Debug)]
 struct Ship2 {
-    x: i32, // west is negative, east is positive
-    y: i32, // south is negative, north is positive
+    x: i32,  // west is negative, east is positive
+    y: i32,  // south is negative, north is positive
     wx: i32, // waypoint x
     wy: i32, // waypoint y
 }

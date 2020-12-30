@@ -93,7 +93,6 @@ impl Adapters {
     }
 }
 
-
 fn main() {
     let content = advent::load_input();
     let mut adapters = Adapters::new();

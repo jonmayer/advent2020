@@ -10,4 +10,3 @@ pub fn load_input() -> String {
     println!("{}: {} bytes", inputfile, contents.len());
     return contents;
 }
-

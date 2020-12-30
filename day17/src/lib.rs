@@ -1,13 +1,12 @@
 #[allow(dead_code)]
-
 #[macro_use]
 extern crate lazy_static;
 
+use ahash::AHashSet;
+use fxhash::FxHashSet;
 use std::collections::HashSet;
 use std::hash::BuildHasherDefault;
 use twox_hash::XxHash64;
-use fxhash::FxHashSet;
-use ahash::AHashSet;
 
 pub mod bitvector;
 
@@ -63,7 +62,6 @@ impl BitSet {
             self.data.remove(&index);
         }
     }
-        
 }
 
 // A voxel map of the pocket universe.
@@ -83,17 +81,19 @@ impl Voxels {
         Voxels {
             n,
             nsquared: n * n,
-            min_x: 0, max_x: 0,
-            min_y: 0, max_y: 0,
+            min_x: 0,
+            max_x: 0,
+            min_y: 0,
+            max_y: 0,
             max_z: 0,
             // Since world is mirrored in z-axis, we need N/2 planes for z.
-            bits: BitSet::new(n*n*n/2),
+            bits: BitSet::new(n * n * n / 2),
         }
     }
 
     pub fn initialize(&mut self, text: &str) {
         let lines = text.lines();
-        let offset = (lines.clone().count()/2) as isize;
+        let offset = (lines.clone().count() / 2) as isize;
         for (y, line) in lines.enumerate() {
             for (x, ch) in line.chars().enumerate() {
                 let off_x: isize = x as isize - offset;
@@ -108,20 +108,23 @@ impl Voxels {
 
     pub fn count_all_ones(&self) -> usize {
         let sum = self.bits.count_all_ones();
-        let mirrored: usize = self.bits.data.iter()
-                .map(|index| self.index_to_z_coord(*index as usize))
-                .filter(|z| *z != 0)
-                .count();
+        let mirrored: usize = self
+            .bits
+            .data
+            .iter()
+            .map(|index| self.index_to_z_coord(*index as usize))
+            .filter(|z| *z != 0)
+            .count();
         return sum + mirrored;
     }
 
     pub fn print(&self) {
         let x_len = (self.max_x - self.min_x + 1) as usize;
-        for z in 0..(self.max_z+1) {
+        for z in 0..(self.max_z + 1) {
             println!("z = {}", z);
-            for y in self.min_y..(self.max_y+1) {
+            for y in self.min_y..(self.max_y + 1) {
                 let index = self.coord_to_index(self.min_x, y, z);
-                let s = (index..(index+x_len))
+                let s = (index..(index + x_len))
                     .map(|index| self.bits.get(index))
                     .map(|x| if x { '#' } else { '.' })
                     .collect::<String>();
@@ -131,57 +134,69 @@ impl Voxels {
     }
 
     fn coord_to_index(&self, x: isize, y: isize, z: isize) -> usize {
-        let x = (x + (self.n as isize)/2) as usize;
-        let y = (y + (self.n as isize)/2) as usize;
-        let absz = z.abs() as usize;  // because z is a mirrored axis of symmetry.
-        return x + self.n*y + self.nsquared*absz;
+        let x = (x + (self.n as isize) / 2) as usize;
+        let y = (y + (self.n as isize) / 2) as usize;
+        let absz = z.abs() as usize; // because z is a mirrored axis of symmetry.
+        return x + self.n * y + self.nsquared * absz;
     }
 
     fn index_to_z_coord(&self, index: usize) -> isize {
         let absz: usize = index / self.nsquared;
-        let z: isize = (absz as isize) - ((self.n/2) as isize);
+        let z: isize = (absz as isize) - ((self.n / 2) as isize);
         return z;
     }
 
     fn getbit(&self, x: isize, y: isize, z: isize) -> bool {
-        if  (x < self.min_x) || (x > self.max_x) ||
-            (y < self.min_y) || (y > self.max_y) ||
-            (z > self.max_z) {
-                return false;
+        if (x < self.min_x)
+            || (x > self.max_x)
+            || (y < self.min_y)
+            || (y > self.max_y)
+            || (z > self.max_z)
+        {
+            return false;
         }
-        return  self.bits.get(self.coord_to_index(x, y, z));
+        return self.bits.get(self.coord_to_index(x, y, z));
     }
 
     pub fn count_bit(&self, x: isize, y: isize, z: isize) -> usize {
         match self.getbit(x, y, z) {
             true => 1,
-            false => 0
+            false => 0,
         }
     }
-
 
     pub fn count_adjacent(&self, x: isize, y: isize, z: isize) -> usize {
         let mut count = 0usize;
         // count of bits in cube:
-        for adj_z in (z-1)..(z+2) {
-          for adj_y in (y-1)..(y+2) {
-              let index = self.coord_to_index(x-1, adj_y, adj_z);
-              count += self.bits.count_ones(index, index+3);
-          }
+        for adj_z in (z - 1)..(z + 2) {
+            for adj_y in (y - 1)..(y + 2) {
+                let index = self.coord_to_index(x - 1, adj_y, adj_z);
+                count += self.bits.count_ones(index, index + 3);
+            }
         }
-        count -= self.count_bit(x, y, z);  // subtract the middle bit.
+        count -= self.count_bit(x, y, z); // subtract the middle bit.
         return count;
     }
 
     // modifies self.bits
     fn setbit(&mut self, x: isize, y: isize, z: isize, value: bool) {
-        if x < self.min_x { self.min_x = x }
-        if y < self.min_y { self.min_y = y }
-        if x > self.max_x { self.max_x = x }
-        if y > self.max_y { self.max_y = y }
-        if z > self.max_z { self.max_z = z }
+        if x < self.min_x {
+            self.min_x = x
+        }
+        if y < self.min_y {
+            self.min_y = y
+        }
+        if x > self.max_x {
+            self.max_x = x
+        }
+        if y > self.max_y {
+            self.max_y = y
+        }
+        if z > self.max_z {
+            self.max_z = z
+        }
         // TODO: implement resize if min/max dim > n.
-        let index = self.coord_to_index(x,y,z);
+        let index = self.coord_to_index(x, y, z);
         self.bits.set(index, value);
         assert_eq!(value, self.getbit(x, y, z));
     }
@@ -208,21 +223,23 @@ impl Voxels {
     //
     pub fn update(&mut self) -> Voxels {
         let n = self.n;
-        let mut v = Voxels { 
+        let mut v = Voxels {
             n,
             nsquared: n * n,
-            min_x: self.min_x, max_x: self.max_x,
-            min_y: self.min_y, max_y: self.max_y,
+            min_x: self.min_x,
+            max_x: self.max_x,
+            min_y: self.min_y,
+            max_y: self.max_y,
             max_z: self.max_z,
             // Since world is mirrored in z-axis, we need N/2 planes for z.
-            bits: BitSet::new(n*n*n/2),
+            bits: BitSet::new(n * n * n / 2),
         };
         v.bits = self.bits.clone();
         for z in 0..(self.max_z + 2) {
             for y in (self.min_y - 1)..(self.max_y + 2) {
                 for x in (self.min_x - 1)..(self.max_x + 2) {
                     // this failed when using BitVec::splice:
-                    assert_eq!(self.getbit(x,y,z), v.getbit(x,y,z));
+                    assert_eq!(self.getbit(x, y, z), v.getbit(x, y, z));
                     let count = self.count_adjacent(x, y, z);
                     let active = self.getbit(x, y, z);
                     if active {
@@ -235,12 +252,12 @@ impl Voxels {
                             v.setbit(x, y, z, true);
                         }
                     }
-                }  // x
-            }  // y
-        }  // z
+                } // x
+            } // y
+        } // z
         return v;
     }
-}  // impl Voxels 
+} // impl Voxels
 
 // Like Voxels, but in 4 dimensions.
 //
@@ -266,11 +283,15 @@ impl HyperVoxels {
         let mut this = HyperVoxels {
             n,
             nsquared: n * n,
-            min_x: 0, max_x: 0,
-            min_y: 0, max_y: 0,
-            min_z: 0, max_z: 0,
-            min_w: 0, max_w: 0,
-            bits: BitSet::new(n*n*n*n),
+            min_x: 0,
+            max_x: 0,
+            min_y: 0,
+            max_y: 0,
+            min_z: 0,
+            max_z: 0,
+            min_w: 0,
+            max_w: 0,
+            bits: BitSet::new(n * n * n * n),
             offsets: Vec::new(),
         };
         for w in -1..=1 {
@@ -290,7 +311,7 @@ impl HyperVoxels {
 
     fn initialize(&mut self, text: &str) {
         let lines = text.lines();
-        let offset = (lines.clone().count()/2) as isize;
+        let offset = (lines.clone().count() / 2) as isize;
         for (y, line) in lines.enumerate() {
             for (x, ch) in line.chars().enumerate() {
                 let off_x: isize = x as isize - offset;
@@ -308,57 +329,77 @@ impl HyperVoxels {
     }
 
     fn coord_to_index(&self, x: isize, y: isize, z: isize, w: isize) -> usize {
-        let x = (x + (self.n as isize)/2) as usize;
-        let y = (y + (self.n as isize)/2) as usize;
-        let z = (z + (self.n as isize)/2) as usize;
-        let w = (w + (self.n as isize)/2) as usize;
-        return x + self.n*y + self.nsquared*z + self.n*self.nsquared * w;
+        let x = (x + (self.n as isize) / 2) as usize;
+        let y = (y + (self.n as isize) / 2) as usize;
+        let z = (z + (self.n as isize) / 2) as usize;
+        let w = (w + (self.n as isize) / 2) as usize;
+        return x + self.n * y + self.nsquared * z + self.n * self.nsquared * w;
     }
 
     fn getbit(&self, x: isize, y: isize, z: isize, w: isize) -> bool {
-        if  (x < self.min_x) || (x > self.max_x) ||
-            (y < self.min_y) || (y > self.max_y) ||
-            (z < self.min_z) || (z > self.max_z) ||
-            (w < self.min_w) || (w > self.max_w) {
-                return false;
+        if (x < self.min_x)
+            || (x > self.max_x)
+            || (y < self.min_y)
+            || (y > self.max_y)
+            || (z < self.min_z)
+            || (z > self.max_z)
+            || (w < self.min_w)
+            || (w > self.max_w)
+        {
+            return false;
         }
-        return  self.bits.get(self.coord_to_index(x, y, z, w));
+        return self.bits.get(self.coord_to_index(x, y, z, w));
     }
 
     fn count_bit(&self, x: isize, y: isize, z: isize, w: isize) -> usize {
         match self.getbit(x, y, z, w) {
             true => 1,
-            false => 0
+            false => 0,
         }
     }
 
-
     fn count_adjacent(&self, x: isize, y: isize, z: isize, w: isize) -> usize {
         let mut count = 0usize;
-        for adj_w in (w-1)..(w+2) {
-            for adj_z in (z-1)..(z+2) {
-              for adj_y in (y-1)..(y+2) {
-                  let index = self.coord_to_index(x-1, adj_y, adj_z, adj_w);
-                  count += self.bits.count_ones(index, index+3);
-              }
+        for adj_w in (w - 1)..(w + 2) {
+            for adj_z in (z - 1)..(z + 2) {
+                for adj_y in (y - 1)..(y + 2) {
+                    let index = self.coord_to_index(x - 1, adj_y, adj_z, adj_w);
+                    count += self.bits.count_ones(index, index + 3);
+                }
             }
         }
-        count -= self.count_bit(x, y, z, w);  // subtract the middle bit.
+        count -= self.count_bit(x, y, z, w); // subtract the middle bit.
         return count;
     }
 
     // modifies self.bits
     fn setbit(&mut self, x: isize, y: isize, z: isize, w: isize, value: bool) {
-        if x < self.min_x { self.min_x = x }
-        if y < self.min_y { self.min_y = y }
-        if x > self.max_x { self.max_x = x }
-        if y > self.max_y { self.max_y = y }
-        if z < self.min_z { self.min_z = z }
-        if z > self.max_z { self.max_z = z }
-        if w < self.min_w { self.min_w = w }
-        if w > self.max_w { self.max_w = w }
+        if x < self.min_x {
+            self.min_x = x
+        }
+        if y < self.min_y {
+            self.min_y = y
+        }
+        if x > self.max_x {
+            self.max_x = x
+        }
+        if y > self.max_y {
+            self.max_y = y
+        }
+        if z < self.min_z {
+            self.min_z = z
+        }
+        if z > self.max_z {
+            self.max_z = z
+        }
+        if w < self.min_w {
+            self.min_w = w
+        }
+        if w > self.max_w {
+            self.max_w = w
+        }
         // TODO: implement resize if min/max dim > n.
-        let index = self.coord_to_index(x,y,z,w);
+        let index = self.coord_to_index(x, y, z, w);
         self.bits.set(index, value);
     }
 
@@ -386,15 +427,19 @@ impl HyperVoxels {
     //
     fn update(&mut self) -> HyperVoxels {
         let n = self.n;
-        let mut v = HyperVoxels { 
+        let mut v = HyperVoxels {
             n,
             nsquared: n * n,
-            min_x: self.min_x, max_x: self.max_x,
-            min_y: self.min_y, max_y: self.max_y,
-            min_z: self.min_z, max_z: self.max_z,
-            min_w: self.min_w, max_w: self.max_w,
+            min_x: self.min_x,
+            max_x: self.max_x,
+            min_y: self.min_y,
+            max_y: self.max_y,
+            min_z: self.min_z,
+            max_z: self.max_z,
+            min_w: self.min_w,
+            max_w: self.max_w,
             // Since world is mirrored in z-axis, we need N/2 planes for z.
-            bits: BitSet::new(n*n*n*n),
+            bits: BitSet::new(n * n * n * n),
             offsets: self.offsets.clone(),
         };
         v.bits = self.bits.clone();
@@ -404,7 +449,9 @@ impl HyperVoxels {
                 // check each neighbor
                 let check_index = active_index + offset;
                 // count neighbors of "check_index" voxel:
-                let count = self.offsets.iter()
+                let count = self
+                    .offsets
+                    .iter()
                     .map(|x| check_index + x)
                     .filter(|x| self.bits.data.contains(x))
                     .count();
@@ -419,11 +466,11 @@ impl HyperVoxels {
                         v.bits.data.insert(check_index);
                     }
                 }
-            }  // offset
-        }  // active_index
+            } // offset
+        } // active_index
         return v;
     }
-}  // impl HyperVoxels 
+} // impl HyperVoxels
 
 pub fn part1(contents: &str) -> usize {
     let mut voxels = Voxels::new(128);

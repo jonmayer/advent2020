@@ -1,6 +1,5 @@
-use std::fs;
 use regex::Regex;
-
+use std::fs;
 
 fn main() {
     let inputfile = "input.txt";

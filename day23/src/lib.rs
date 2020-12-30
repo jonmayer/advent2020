@@ -1,8 +1,8 @@
 use std::fmt;
 
-#[derive(Default,Debug)]
+#[derive(Default, Debug)]
 struct State {
-    cups: [u8;9],  // digits are 0 based: 0 through 8 inclusive
+    cups: [u8; 9], // digits are 0 based: 0 through 8 inclusive
 }
 
 impl fmt::Display for State {
@@ -15,22 +15,27 @@ impl fmt::Display for State {
 }
 
 impl State {
-    fn new() -> State { Default::default() }
+    fn new() -> State {
+        Default::default()
+    }
 
     fn do_round(&self) -> State {
         let mut next = State::new();
-        let mut dest = (self.cups[0] + 8) % 9;  // -1 mod 9
+        let mut dest = (self.cups[0] + 8) % 9; // -1 mod 9
         while self.cups[1..4].contains(&dest) {
-            dest = (dest+8)%9;
+            dest = (dest + 8) % 9;
         }
         let mut j = 0;
         for i in 4..9 {
             next.cups[j] = self.cups[i];
             j += 1;
             if self.cups[i] == dest {
-                next.cups[j] = self.cups[1]; j += 1;
-                next.cups[j] = self.cups[2]; j += 1;
-                next.cups[j] = self.cups[3]; j += 1;
+                next.cups[j] = self.cups[1];
+                j += 1;
+                next.cups[j] = self.cups[2];
+                j += 1;
+                next.cups[j] = self.cups[3];
+                j += 1;
             }
         }
         next.cups[j] = self.cups[0];
@@ -53,13 +58,12 @@ impl State {
 }
 
 struct Game {
-    start: u32, // index
-    cups: Vec<u32>,  // each cup knows the index of the next cup 
+    start: u32,     // index
+    cups: Vec<u32>, // each cup knows the index of the next cup
 }
 
-const MILL: u32 = 1000u32*1000;
+const MILL: u32 = 1000u32 * 1000;
 const MILLMIN1: u32 = MILL - 1u32;
-
 
 // sub 1 modulo a million.
 fn decrement(i: u32) -> u32 {
@@ -76,7 +80,7 @@ impl Game {
     fn new() -> Game {
         let mut g = Game {
             start: 0,
-            cups: Vec::with_capacity(1000*1000),
+            cups: Vec::with_capacity(1000 * 1000),
         };
         g.cups.resize(1000000, 0);
         for i in 0u32..(MILL - 1) {
@@ -95,7 +99,7 @@ impl Game {
         let np4 = self.cups[np3 as usize];
 
         // modify dest to not include the np1,np2,np3 cups:
-        while (dest == np1) || (dest == np2) || (dest == np3) { 
+        while (dest == np1) || (dest == np2) || (dest == np3) {
             dest = decrement(dest);
         }
 
@@ -112,13 +116,15 @@ impl Game {
     }
 
     fn do_n_rounds(&mut self, n: u32) {
-        for _i in 0..n { self.do_round(); }
+        for _i in 0..n {
+            self.do_round();
+        }
     }
 
     fn parse(&mut self, text: &str) {
         let chars: Vec<char> = text.chars().collect();
         self.start = chars[0] as u32 - '1' as u32;
-        self.cups[1000*1000-1] = self.start;
+        self.cups[1000 * 1000 - 1] = self.start;
         // if "462"
         // start=4
         // cups[4] = 6
@@ -147,10 +153,10 @@ impl Game {
     }
 
     fn range_to_string(&self, start: u32, count: u32) -> String {
-        let mut s = String::with_capacity(count as usize * 3);  // guess
+        let mut s = String::with_capacity(count as usize * 3); // guess
         let mut j = start;
         for _ in 0..count {
-            s.push_str((j+1).to_string().as_str());
+            s.push_str((j + 1).to_string().as_str());
             s.push(',');
             j = self.cups[j as usize];
         }
@@ -172,7 +178,9 @@ fn test_state() {
 pub fn part_1() -> String {
     let mut s = State::new();
     s.parse("284573961");
-    for _ in 0..100 {s=s.do_round();}
+    for _ in 0..100 {
+        s = s.do_round();
+    }
     return s.to_string();
 }
 
@@ -216,7 +224,7 @@ pub fn part_2() -> String {
     game.parse("284573961");
     game.do_n_rounds(10 * 1000 * 1000);
     let a = game.cups[0] as u64 + 1;
-    let b = game.cups[game.cups[0] as usize]as u64 + 1;
+    let b = game.cups[game.cups[0] as usize] as u64 + 1;
     let c = a * b;
     assert_eq!(166298218695, c);
     return c.to_string();

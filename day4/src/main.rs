@@ -3,8 +3,8 @@ extern crate lazy_static;
 extern crate regex;
 
 use regex::Regex;
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 type Passport<'a> = HashMap<&'a str, &'a str>;
 
@@ -29,9 +29,13 @@ fn ppvalid(p: &Passport) -> bool {
     pid (Passport ID)
     cid (Country ID) -- optional
     */
-    return p.contains_key("byr") && p.contains_key("iyr") && p.contains_key("eyr") &&
-        p.contains_key("hgt") && p.contains_key("hcl") && p.contains_key("ecl") &&
-        p.contains_key("pid");
+    return p.contains_key("byr")
+        && p.contains_key("iyr")
+        && p.contains_key("eyr")
+        && p.contains_key("hgt")
+        && p.contains_key("hcl")
+        && p.contains_key("ecl")
+        && p.contains_key("pid");
 }
 
 // passport validator for part 2
@@ -65,9 +69,13 @@ fn ppvalid2(p: &Passport) -> bool {
      * pid (Passport ID) - a nine-digit number, including leading zeroes.
      * cid (Country ID) - ignored, missing or not.
      */
-    if !(p.contains_key("byr") && p.contains_key("iyr") && p.contains_key("eyr") &&
-             p.contains_key("hgt") && p.contains_key("hcl") && p.contains_key("ecl") &&
-             p.contains_key("pid"))
+    if !(p.contains_key("byr")
+        && p.contains_key("iyr")
+        && p.contains_key("eyr")
+        && p.contains_key("hgt")
+        && p.contains_key("hcl")
+        && p.contains_key("ecl")
+        && p.contains_key("pid"))
     {
         return false;
     }
@@ -82,13 +90,11 @@ fn ppvalid2(p: &Passport) -> bool {
     }
 
     lazy_static! {
-       static ref re_hgt: Regex = Regex::new(r"^(\d+)(in|cm)$").unwrap();
-       static ref re_hcl: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
-       static ref re_ecl: Regex = Regex::new(
-           r"^(amb|blu|brn|gry|grn|hzl|oth)$").unwrap();
-       static ref re_pid: Regex = Regex::new(
-           r"^\d{9}$").unwrap();
-   }
+        static ref re_hgt: Regex = Regex::new(r"^(\d+)(in|cm)$").unwrap();
+        static ref re_hcl: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
+        static ref re_ecl: Regex = Regex::new(r"^(amb|blu|brn|gry|grn|hzl|oth)$").unwrap();
+        static ref re_pid: Regex = Regex::new(r"^\d{9}$").unwrap();
+    }
     if !re_hcl.is_match(p["hcl"]) {
         return false;
     }

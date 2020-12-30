@@ -47,10 +47,10 @@ fn main() {
     Right 1, down 2.
     */
 
-    let product = dbg!(count_trees(&data, &Coord { x: 1, y: 1 })) *
-        dbg!(count_trees(&data, &Coord { x: 3, y: 1 })) *
-        dbg!(count_trees(&data, &Coord { x: 5, y: 1 })) *
-        dbg!(count_trees(&data, &Coord { x: 7, y: 1 })) *
-        dbg!(count_trees(&data, &Coord { x: 1, y: 2 }));
+    let product = dbg!(count_trees(&data, &Coord { x: 1, y: 1 }))
+        * dbg!(count_trees(&data, &Coord { x: 3, y: 1 }))
+        * dbg!(count_trees(&data, &Coord { x: 5, y: 1 }))
+        * dbg!(count_trees(&data, &Coord { x: 7, y: 1 }))
+        * dbg!(count_trees(&data, &Coord { x: 1, y: 2 }));
     dbg!(product);
 }

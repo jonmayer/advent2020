@@ -3,12 +3,12 @@ extern crate lazy_static;
 extern crate regex;
 
 use advent;
-use std::collections::HashMap;
 use regex::Regex;
+use std::collections::HashMap;
 
 type DataType = u64;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 struct Mask {
     ones_mask: DataType,
     zeros_mask: DataType,
@@ -17,7 +17,11 @@ struct Mask {
 
 impl Mask {
     fn new(s: &str) -> Mask {
-        let mut m = Mask{ ones_mask: 0, zeros_mask: 0, xlist: Vec::new() };
+        let mut m = Mask {
+            ones_mask: 0,
+            zeros_mask: 0,
+            xlist: Vec::new(),
+        };
         let mut bitpos: u8 = s.len() as u8;
         assert_eq!(36, bitpos);
         for ch in s.chars() {
@@ -31,8 +35,8 @@ impl Mask {
                 _ => panic!("Wat {}", ch),
             }
         }
-        m.xlist.reverse();  // put the LSB first.
-        return m
+        m.xlist.reverse(); // put the LSB first.
+        return m;
     }
 
     fn xmask(&self) -> DataType {
@@ -47,7 +51,7 @@ impl Mask {
     fn addr_iter(&self, a: DataType) -> MaskIterator {
         MaskIterator::new(self.clone(), a)
     }
-}  // impl Mask
+} // impl Mask
 
 // My first iterator!
 struct MaskIterator {
@@ -59,10 +63,15 @@ struct MaskIterator {
 
 impl MaskIterator {
     fn new(m: Mask, a: u64) -> MaskIterator {
-        let mut it = MaskIterator{ index: 0, max: 0, base: a, xlist: m.xlist.clone() };
+        let mut it = MaskIterator {
+            index: 0,
+            max: 0,
+            base: a,
+            xlist: m.xlist.clone(),
+        };
         it.base |= m.ones_mask;
         it.base &= !m.xmask();
-        it.max = (1u64 << it.xlist.len()) - 1;  // inclusive bound
+        it.max = (1u64 << it.xlist.len()) - 1; // inclusive bound
         return it;
     }
 }
@@ -86,12 +95,14 @@ impl Iterator for MaskIterator {
 }
 
 struct Memory {
-    data: HashMap<u64, u64>
+    data: HashMap<u64, u64>,
 }
 
 impl Memory {
     fn new() -> Memory {
-        Memory { data: HashMap::new() }
+        Memory {
+            data: HashMap::new(),
+        }
     }
 
     fn get(&self, i: u64) -> u64 {
@@ -109,7 +120,6 @@ impl Memory {
     fn bigsum(&self) -> u128 {
         self.data.values().map(|x| *x as u128).sum()
     }
-
 }
 
 enum Instruction {
@@ -119,16 +129,17 @@ enum Instruction {
 
 impl Instruction {
     fn new(s: &str) -> Instruction {
-        lazy_static!{
-            static ref RE_STORE: Regex = Regex::new(
-                r"mem\[(\d+)\] = (\d+)").unwrap();
+        lazy_static! {
+            static ref RE_STORE: Regex = Regex::new(r"mem\[(\d+)\] = (\d+)").unwrap();
         }
         if &s[0..7] == "mask = " {
             return Instruction::MaskOp(Mask::new(&s[7..]));
         }
         let caps = RE_STORE.captures(s).unwrap();
-        return Instruction::Store(caps.get(1).unwrap().as_str().parse::<u64>().unwrap(),
-                                  caps.get(2).unwrap().as_str().parse::<u64>().unwrap());
+        return Instruction::Store(
+            caps.get(1).unwrap().as_str().parse::<u64>().unwrap(),
+            caps.get(2).unwrap().as_str().parse::<u64>().unwrap(),
+        );
     }
 }
 
@@ -140,14 +151,17 @@ struct System {
 type Program = Vec<Instruction>;
 
 fn parse_program(content: &str) -> Program {
-    content.lines().map(|line| Instruction::new(line.trim())).collect()
+    content
+        .lines()
+        .map(|line| Instruction::new(line.trim()))
+        .collect()
 }
 
 impl System {
     fn new() -> System {
         System {
-        mask: Mask::new("000000000000000000000000000000000000"),
-        mem: Memory::new(),
+            mask: Mask::new("000000000000000000000000000000000000"),
+            mem: Memory::new(),
         }
     }
 
@@ -201,4 +215,3 @@ fn main() {
     dbg!(part1(&content));
     dbg!(part2(&content));
 }
-

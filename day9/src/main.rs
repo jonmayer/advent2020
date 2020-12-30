@@ -8,7 +8,9 @@ struct Decoder {
 
 impl Decoder {
     fn new() -> Decoder {
-        Decoder { window: collections::VecDeque::new() }
+        Decoder {
+            window: collections::VecDeque::new(),
+        }
     }
 
     // returns true if the submitted number is valid
@@ -24,12 +26,16 @@ impl Decoder {
                         break;
                     }
                 }
-                if valid { break; }
+                if valid {
+                    break;
+                }
             }
         }
 
         self.window.push_back(num);
-        while self.window.len() > 25 { self.window.pop_front(); }
+        while self.window.len() > 25 {
+            self.window.pop_front();
+        }
 
         return valid;
     }
@@ -42,7 +48,9 @@ fn main() {
     let mut part1_result: i64 = -1;
     let mut decoder = Decoder::new();
     for num in numbers.iter() {
-        if !decoder.consume(*num) { part1_result = *num; }
+        if !decoder.consume(*num) {
+            part1_result = *num;
+        }
     }
 
     let mut i: usize = 0;
@@ -58,8 +66,8 @@ fn main() {
         }
     }
     dbg!(&i, &j);
-    let min = numbers[i..j+1].iter().min().unwrap();
-    let max = numbers[i..j+1].iter().max().unwrap();
+    let min = numbers[i..j + 1].iter().min().unwrap();
+    let max = numbers[i..j + 1].iter().max().unwrap();
     let part2_result = min + max;
 
     dbg!(part1_result);

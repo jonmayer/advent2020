@@ -1,15 +1,18 @@
 // TODO: learn how to extend existing types (HashMap) using traits.
-use std::collections::HashMap;
 use howlong;
+use std::collections::HashMap;
 
 struct Tracker {
     seen: HashMap<u64, u64>,
-    turn: u64,  // last turn
+    turn: u64, // last turn
 }
 
 impl Tracker {
     fn new() -> Tracker {
-        Tracker { seen: HashMap::new(), turn: 0 }
+        Tracker {
+            seen: HashMap::new(),
+            turn: 0,
+        }
     }
 
     // returns the number of turns since number was added, or 0 if number is new.
@@ -30,7 +33,7 @@ fn run(starters: Vec<u64>, until: u64) -> u64 {
     for num in starters {
         v = tracker.append_number(num);
     }
-    while tracker.turn < until-1 {
+    while tracker.turn < until - 1 {
         v = tracker.append_number(v);
     }
     let elapsed = timer.elapsed();
@@ -39,7 +42,7 @@ fn run(starters: Vec<u64>, until: u64) -> u64 {
 }
 
 fn main() {
-    let starting = vec![5,1,9,18,13,8,0];
+    let starting = vec![5, 1, 9, 18, 13, 8, 0];
     dbg!(run(starting.clone(), 2020));
     dbg!(run(starting.clone(), 30000000));
 }

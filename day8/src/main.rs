@@ -15,7 +15,10 @@ struct Instruction {
 
 impl Instruction {
     fn new() -> Instruction {
-        Instruction { operation: Operation::Nop, operand: 0 }
+        Instruction {
+            operation: Operation::Nop,
+            operand: 0,
+        }
     }
 
     fn parse(&mut self, line: &str) {
@@ -37,7 +40,7 @@ fn line_to_instruction(line: &str) -> Instruction {
 }
 
 #[derive(Clone)]
-struct Computer{
+struct Computer {
     program: Vec<Instruction>,
     visited: Vec<bool>,
     acc: i64,
@@ -55,9 +58,7 @@ impl Computer {
     }
 
     fn load_program(&mut self, text: &str) {
-        self.program = text.lines()
-            .map(|line| line_to_instruction(line))
-            .collect();
+        self.program = text.lines().map(|line| line_to_instruction(line)).collect();
         self.visited = self.program.iter().map(|_| false).collect();
     }
 
@@ -97,8 +98,6 @@ impl Computer {
         return false;
     }
 }
-
-
 
 fn main() {
     let content = advent::load_input();

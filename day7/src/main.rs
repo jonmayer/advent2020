@@ -1,7 +1,7 @@
 use advent;
+use regex;
 use std::collections;
 use std::collections::HashMap;
-use regex;
 
 #[derive(Clone, Debug)]
 struct BagRule {
@@ -12,7 +12,11 @@ struct BagRule {
 
 impl BagRule {
     fn new_from_name(name: &str) -> BagRule {
-        return BagRule{ name: name.to_owned(), contains: HashMap::new(), contained_by: Vec::new(), };
+        return BagRule {
+            name: name.to_owned(),
+            contains: HashMap::new(),
+            contained_by: Vec::new(),
+        };
     }
 
     fn parse(&mut self, line: &str) {
@@ -20,12 +24,12 @@ impl BagRule {
         self.name = parts[0].to_owned();
         let re_bagdesc = regex::Regex::new(r"^(\d+) (\S+\s+\S+) bag").unwrap();
         if !(parts[1] == "no other bags.") {
-          for d in parts[1].split(", ") {
-            let caps = re_bagdesc.captures(d).unwrap();
-            let count: u32 = caps.get(1).unwrap().as_str().parse::<u32>().unwrap();
-            let bagtype = caps.get(2).unwrap().as_str().to_owned();
-            self.contains.insert(bagtype, count);
-          }
+            for d in parts[1].split(", ") {
+                let caps = re_bagdesc.captures(d).unwrap();
+                let count: u32 = caps.get(1).unwrap().as_str().parse::<u32>().unwrap();
+                let bagtype = caps.get(2).unwrap().as_str().to_owned();
+                self.contains.insert(bagtype, count);
+            }
         }
     }
 
@@ -43,9 +47,7 @@ struct BagGraph {
 
 impl BagGraph {
     pub fn new() -> BagGraph {
-        BagGraph {
-            m: HashMap::new(),
-        }
+        BagGraph { m: HashMap::new() }
     }
 
     fn get_mut_rule(&mut self, name: &str) -> &mut BagRule {
@@ -72,8 +74,16 @@ impl BagGraph {
                     let br = BagRule::new_from_name(key);
                     self.m.insert(key.to_owned(), br);
                 }
-                self.m.get_mut(key).unwrap().contained_by.push(br.name.to_owned());
-                println!("  {} contained by {:?}", key, self.m.get(key).unwrap().contained_by);
+                self.m
+                    .get_mut(key)
+                    .unwrap()
+                    .contained_by
+                    .push(br.name.to_owned());
+                println!(
+                    "  {} contained by {:?}",
+                    key,
+                    self.m.get(key).unwrap().contained_by
+                );
             }
             self.m.insert(br.name.to_owned(), br);
         }
@@ -87,13 +97,15 @@ impl BagGraph {
         while !checklist.is_empty() {
             let name = checklist.pop_front().unwrap();
             // dbg!(&name, &checklist);
-            if visited.contains(&name) { continue; }
+            if visited.contains(&name) {
+                continue;
+            }
             visited.insert(name.to_owned());
             let br = self.get_rule(&name);
             // dbg!(&br);
             for other in br.contained_by.iter() {
                 if !visited.contains(other) {
-                  checklist.push_back(other.to_owned());
+                    checklist.push_back(other.to_owned());
                 }
             }
         }
@@ -113,10 +125,7 @@ impl BagGraph {
         }
         return count;
     }
-
 }
-
-
 
 fn main() {
     let mut part1_result = 0;
@@ -128,8 +137,8 @@ fn main() {
 
     let containers = graph.search_up("shiny gold");
     dbg!(&containers);
-    part1_result = containers.len() - 1;  // don't count "shiny gold" bag itself.
-    part2_result = graph.count_down("shiny gold") - 1;  // same.
+    part1_result = containers.len() - 1; // don't count "shiny gold" bag itself.
+    part2_result = graph.count_down("shiny gold") - 1; // same.
 
     dbg!(part1_result);
     dbg!(part2_result);

@@ -9,7 +9,8 @@ impl Sequence {
     fn parse(text: &str) -> Sequence {
         let text = text.trim();
         Sequence {
-            rules: text.split_whitespace()
+            rules: text
+                .split_whitespace()
                 .map(|x| x.parse::<usize>().unwrap())
                 .collect(),
         }
@@ -35,7 +36,6 @@ impl Rule {
             return Rule::Alternates(alts);
         }
     }
-
 }
 
 // Chooser is used to exhaustively search decision space.   "state" is source
@@ -49,10 +49,7 @@ struct Chooser {
 
 impl Chooser {
     fn new(i: u128) -> Chooser {
-        Chooser {
-            state: i,
-            count: 0,
-        }
+        Chooser { state: i, count: 0 }
     }
 
     fn choose(&mut self) -> usize {
@@ -66,7 +63,6 @@ impl Chooser {
         return i >= (1 << self.count);
     }
 }
-
 
 #[derive(Debug)]
 pub struct RuleMap {
@@ -114,10 +110,17 @@ impl RuleMap {
         }
         let rule = &(self.m[&rule_id]);
         let consumed: usize = match rule {
-            Rule::Char(x) => if self.data[index] == *x { 1 } else { 0 },
+            Rule::Char(x) => {
+                if self.data[index] == *x {
+                    1
+                } else {
+                    0
+                }
+            }
             Rule::Alternates(alts) => {
-                let mut got = 0;  // no match
-                let gots: Vec<usize> = alts.iter()
+                let mut got = 0; // no match
+                let gots: Vec<usize> = alts
+                    .iter()
                     .map(|a| self.try_sequence(index, a, chooser))
                     .filter(|g| *g > 0)
                     .collect();
@@ -133,7 +136,6 @@ impl RuleMap {
         return consumed;
     }
 
-
     pub fn try_match(&mut self, text: &str) -> bool {
         let text = text.trim();
         println!("Trying to match {:?}", text);
@@ -147,16 +149,17 @@ impl RuleMap {
         loop {
             let mut chooser: Chooser = Chooser::new(i);
             let consumed = self.try_rule(0, 0, &mut chooser);
-            if consumed == self.data.len() { return true; }
+            if consumed == self.data.len() {
+                return true;
+            }
             i = i + 1;
             // if i is larger that the set of possible choices the
             // chooser was asked to make, terminate early.  My
             // previous code would try 1024 different chooser seeds,
             // this is much faster (typically exhausts decision space
             // after 8 tries).
-            if chooser.exhausted(i) { 
-                println!("Gave up after {} tries ({} choices)",
-                         i, chooser.count);
+            if chooser.exhausted(i) {
+                println!("Gave up after {} tries ({} choices)", i, chooser.count);
                 break;
             }
         }
@@ -176,7 +179,9 @@ pub fn count_matches(ruletext: &str, datatext: &str, part2: bool) -> usize {
     for line in datatext.lines() {
         let valid = rulemap.try_match(line);
         println!("{} for {:?}", valid, line);
-        if valid { count += 1; }
+        if valid {
+            count += 1;
+        }
     }
     return count;
 }
