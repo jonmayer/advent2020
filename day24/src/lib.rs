@@ -109,7 +109,7 @@ impl HexCoord {
                     match c2 {
                         'e' => p.go_se(),
                         'w' => p.go_sw(),
-                        _ => panic!("bad direction"),
+                        _ => panic!("bad direction: s{}", c2),
                     }
                 }
                 _ => panic!("bad direction: {}", ch),
@@ -152,8 +152,28 @@ impl Tiles {
     }
 
     fn step(&self) -> Tiles {
-        let next = self.clone();
-        // TODO with be...
+        let mut next = self.clone();
+
+        // first look at every black tile, and count the adjacent black tiles.
+        // If there are 0, or more than 2 black tiles, tile turns white.
+        for black_tile in self.set.iter() {
+            let (b_neighbors, w_neighbors): (Vec<HexCoord>, Vec<HexCoord>) = black_tile
+                .get_neighbors()
+                .iter()
+                .partition(|n| self.set.contains(*n));
+            if (b_neighbors.len() == 0) || (b_neighbors.len() > 2) {
+                next.set.remove(&black_tile);
+            }
+            // For every white tile next to a black tile, count the neighbors.
+            // If it's next to exactly 2 black tiles, turns black.
+            for white_tile in w_neighbors.iter() {
+                let count = self.count_neighbors(*white_tile);
+                if count == 2 {
+                    next.set.insert(*white_tile);
+                }
+            }
+        }
+
         return next;
     }
 
@@ -187,4 +207,20 @@ pub fn part1() -> usize {
     let mut tiles = Tiles::new();
     tiles.parse(&contents);
     return dbg!(tiles.count_all());
+}
+
+pub fn part2() -> usize {
+    let contents = fs::read_to_string("input.txt").expect("Something went wrong reading the file");
+    println!("Loaded {} bytes", contents.len());
+    let mut tiles = Tiles::new();
+    tiles.parse(&contents);
+    for _ in 0..100 {
+        tiles = tiles.step();
+    }
+    return dbg!(tiles.count_all());
+}
+
+#[test]
+fn test_part2() {
+    assert_eq!(3697, part2());
 }

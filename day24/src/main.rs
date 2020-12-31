@@ -1,3 +1,6 @@
+use day24::*;
+
 fn main() {
-    println!("Hello, world!");
+    dbg!(part1());
+    dbg!(part2());
 }
